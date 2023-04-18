@@ -1,9 +1,0 @@
-{
-    "Description": "Motion-corrected PET file",
-    "Sources": "",
-    "ReferenceImage": "Robust template using mri_robust_register",
-    "CostFunction": "ROB",
-    "QC": "",
-    "SoftwareName": "PETPrep HMC workflow",
-    "SoftwareVersion": "v. 0.0.1"
-}
