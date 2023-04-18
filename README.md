@@ -56,6 +56,32 @@ For example, to process participant `sub-01`, use the following command:
 
 The output will be saved in the specified `--output_dir` following the BIDS Derivatives standard. Preprocessed PET data will be stored in the `petprep_hmc` directory in the derivatives directory, along with the estimated motion parameters (confounds) and motion plots.
 
+## Installation and Running the Code using Docker
+
+### Prerequisites
+To run petprep_hmc workflow using Docker, you must first have Docker installed on your system. You can download and install Docker from https://www.docker.com/.
+
+### Pulling the Docker Image
+Once you have Docker installed, you can pull the petprep_hmc Docker image from Docker Hub by running the following command:
+
+<pre>
+docker pull martinnoergaard/petprep_hmc:latest
+</pre>
+
+### Running the Docker Container
+To run the petprep_hmc Docker container, use the following command:
+
+<pre>
+docker run -it --rm \
+    -v /path/to/bids_input:/data/input \
+    -v /path/to/bids_output:/data/output \
+    -v /path/to/freesurfer_license:/opt/freesurfer/license.txt \
+    your_dockerhub_username/petprep_hmc:latest \
+    python3 run.py --bids_dir /data/input --output_dir /data/output --analysis_level participant [--participant_label PARTICIPANT_LABEL]
+</pre>
+
+This command mounts your local input and output directories, as well as the FreeSurfer license file, to the Docker container. The petprep_hmc script is then executed within the container, processing the input data and saving the results to the specified output directory.
+
 ## Support
 
 For questions or bug reports, please open an issue on the GitHub repository.
