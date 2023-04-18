@@ -42,11 +42,6 @@ def main(args):
     if not os.path.exists(pipeline_dir):
         os.makedirs(pipeline_dir)
 
-    print(args.participant_label)
-    print(pipeline_dir)
-
-    layout = BIDSLayout(args.bids_dir)
-
     infosource = Node(IdentityInterface(
                         fields = ['subject_id','session_id']),
                         name = "infosource")
