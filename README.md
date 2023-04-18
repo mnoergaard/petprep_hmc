@@ -33,7 +33,7 @@ The package is also pip installable and can be installed using the following com
 
 <pre>
 pip install petprep-hmc==0.0.1
-</prep>
+</pre>
 
 ## Usage
 
