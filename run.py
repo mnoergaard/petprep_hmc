@@ -424,7 +424,7 @@ if __name__ == '__main__':
     parser.add_argument('--skip_bids_validator', help='Whether or not to perform BIDS dataset validation',
                    action='store_true')
     parser.add_argument('-v', '--version', action='version',
-                    version='BIDS-App example version {}'.format(__version__))
+                    version='PETPrep BIDS-App version {}'.format(__version__))
     
     args = parser.parse_args() 
     
