@@ -1,4 +1,4 @@
-![PyPI](https://img.shields.io/pypi/v/petprep-hmc) 
+[![PyPI](https://img.shields.io/pypi/v/petprep-hmc)](https://pypi.org/project/petprep-hmc/0.0.1/)
 
 # PETPrep Head Motion Correction workflow (BIDS App)
 This BIDS App provides a pipeline for preprocessing and head motion correction of Positron Emission Tomography (PET) data following the Brain Imaging Data Structure (BIDS) standard.
