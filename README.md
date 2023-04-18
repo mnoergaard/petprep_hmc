@@ -21,9 +21,13 @@ This BIDS App provides a pipeline for preprocessing and head motion correction o
 
 Clone the repository and install the required packages:
 
+<pre>
+```
 git clone https://github.com/mnoergaard/petprep_hmc.git
 cd petprep_hmc
 pip install -e .
+```
+</pre>
 
 ## Usage
 
