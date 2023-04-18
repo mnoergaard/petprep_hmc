@@ -13,7 +13,7 @@ This BIDS App provides a pipeline for preprocessing and head motion correction o
 
 ## Requirements (for more info see the environment.yml file)
 
-- Python Python 3.9+
+- Python 3.9+
 - Nipype
 - NiBabel
 - FSL
@@ -28,6 +28,12 @@ git clone https://github.com/mnoergaard/petprep_hmc.git
 cd petprep_hmc
 pip install -e .
 </pre>
+
+The package is also pip installable and can be installed using the following command
+
+<pre>
+pip install petprep-hmc==0.0.1
+</prep>
 
 ## Usage
 
