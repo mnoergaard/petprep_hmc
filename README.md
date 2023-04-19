@@ -76,7 +76,7 @@ docker run -it --rm \
     -v /path/to/bids_input:/data/input \
     -v /path/to/bids_output:/data/output \
     -v /path/to/freesurfer_license:/opt/freesurfer/license.txt \
-    your_dockerhub_username/petprep_hmc:latest \
+    martinnoergaard/petprep_hmc:latest \
     python3 run.py --bids_dir /data/input --output_dir /data/output --analysis_level participant [--participant_label PARTICIPANT_LABEL]
 </pre>
 
