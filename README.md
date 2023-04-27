@@ -1,4 +1,4 @@
-[![PyPI](https://img.shields.io/pypi/v/petprep-hmc)](https://pypi.org/project/petprep-hmc/0.0.1/) [![Docker Hub](https://img.shields.io/docker/automated/martinnoergaard/petprep_hmc)](https://hub.docker.com/r/martinnoergaard/petprep_hmc) [![DOI](https://zenodo.org/badge/629392424.svg)](https://zenodo.org/badge/latestdoi/629392424)
+[![PyPI](https://img.shields.io/pypi/v/petprep-hmc)](https://pypi.org/project/petprep-hmc/0.0.3/) [![Docker Hub](https://img.shields.io/docker/automated/martinnoergaard/petprep_hmc)](https://hub.docker.com/r/martinnoergaard/petprep_hmc) [![DOI](https://zenodo.org/badge/629392424.svg)](https://zenodo.org/badge/latestdoi/629392424)
 
 
 # PETPrep Head Motion Correction workflow (BIDS App)
@@ -33,7 +33,7 @@ pip install -e .
 The package is also pip installable and can be installed using the following command
 
 <pre>
-pip install petprep-hmc==0.0.1
+pip install petprep-hmc==0.0.3
 </pre>
 
 ## Usage
