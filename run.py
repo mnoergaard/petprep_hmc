@@ -30,7 +30,11 @@ def main(args):
     else:
         raise Exception('BIDS directory does not exist')
     
+    if check_valid_fs_license() is not True:
+        raise Exception('You need a valid FreeSurfer license to proceed!')
     
+    if check_fsl_installed() is not True:
+        raise Exception('FSL is not installed or sourced')
     
     # Get all PET files
     if args.participant_label is None:
@@ -403,6 +407,16 @@ def plot_motion_outputs(in_file):
     plt.grid(visible=True)
     plt.savefig(os.path.join(new_pth,'movement.png'), format='png')
     plt.close()
+
+def check_fsl_installed():
+    try:
+        fsl_home = os.environ['FSLDIR']
+        if fsl_home:
+            print("FSL is installed at:", fsl_home)
+            return True
+    except KeyError:
+        print("FSL is not installed or FSLDIR environment variable is not set.")
+        return False
 
 
 if __name__ == '__main__': 
