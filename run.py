@@ -15,6 +15,7 @@ import glob
 import re
 import shutil
 import json
+from niworkflows.utils.misc import check_valid_fs_license
 
 __version__ = open(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 'version')).read()
@@ -28,6 +29,8 @@ def main(args):
             layout = BIDSLayout(args.bids_dir, validate=False)
     else:
         raise Exception('BIDS directory does not exist')
+    
+    
     
     # Get all PET files
     if args.participant_label is None:
