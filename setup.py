@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="petprep_hmc",
-    version="0.0.1",
+    version="0.0.3",
     description='PETPrep Head Motion Correction Workflow',
     author='Martin Norgaard',
     author_email='martin.noergaard@di.ku.dk',
