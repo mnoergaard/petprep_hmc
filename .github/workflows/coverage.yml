@@ -38,7 +38,7 @@ jobs:
     - name: Run tests with coverage
       run: |
         conda activate petprep_hmc
-        pytest --cov=petprep_hmc --cov-report=xml tests/
+        pytest . --cov=petprep_hmc --cov-report=xml
       shell: bash -l {0}
         
     - name: Upload coverage report
