@@ -32,13 +32,13 @@ jobs:
     - name: Install coverage and pytest
       run: |
         conda activate petprep_hmc
-        conda install -c conda-forge pytest coverage
+        conda install -c conda-forge pytest pytest-cov coverage
       shell: bash -l {0}
         
     - name: Run tests with coverage
       run: |
         conda activate petprep_hmc
-        pytest --cov=tests --cov-report=xml
+        pytest --cov=petprep_hmc --cov-report=xml tests/
       shell: bash -l {0}
         
     - name: Upload coverage report
