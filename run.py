@@ -79,11 +79,11 @@ def main(args):
     split_pet = Node(interface = fs.MRIConvert(split = True), 
                      name = "split_pet")
     
-    smooth_frame = MapNode(interface=fsl.Smooth(fwhm=10), 
+    smooth_frame = MapNode(interface=fsl.Smooth(fwhm=int(args.mc_fwhm)), 
                            name="smooth_frame", 
                            iterfield=['in_file'])
     
-    thres_frame = MapNode(interface = fsl.maths.Threshold(thresh = 20, use_robust_range = True),
+    thres_frame = MapNode(interface = fsl.maths.Threshold(thresh = int(args.mc_thresh), use_robust_range = True),
                           name = "thres_frame", 
                           iterfield = ['in_file'])
     
@@ -97,6 +97,9 @@ def main(args):
                              name = "correct_motion", 
                              iterfield = ['source_file', 'reg_file', 'transformed_file'])
     
+    if args.no_resample:
+        correct_motion.inputs.no_resample = True
+    
     concat_frames = Node(interface = fs.Concatenate(concatenated_file = 'mc.nii.gz'), 
                          name = "concat_frames")
     
@@ -108,11 +111,13 @@ def main(args):
                             name = "est_trans_rot", 
                             iterfield = ['mat_file'])
     
-    est_min_frame = Node(Function(input_names = ['json_file'],
+    est_min_frame = Node(Function(input_names = ['json_file', 'mc_start_time'],
                                   output_names = ['min_frame'],
                                   function = get_min_frame),
-                         name = "est_min_frame")
+                         name = "est_min_frame",)
     
+    est_min_frame.inputs.mc_start_time = int(args.mc_start_time)
+
     upd_frame_list = Node(Function(input_names = ['in_file','min_frame'],
                                    output_names = ['upd_list_frames'],
                                    function = update_list_frames),
@@ -172,27 +177,33 @@ def main(args):
     
     for idx, x in enumerate(mc_files):
         sub_id = re.findall('subject_id_(.*)/concat', mc_files[idx])[0]
-        session = re.findall('session_id_(.*)_subject_id', mc_files[idx])[0]
-        sub_out_dir = Path(os.path.join(output_dir,'sub-' + sub_id,'ses-' + session))
+        sess_id = re.findall('session_id_(.*)_subject_id', mc_files[idx])[0]
+        sub_out_dir = Path(os.path.join(output_dir,'sub-' + sub_id,'ses-' + sess_id))
         os.makedirs(sub_out_dir)
-        shutil.copyfile(mc_files[idx],os.path.join(sub_out_dir,'sub-' + sub_id + '_ses-' + session + '_desc-mc_pet.nii.gz'))
-        shutil.copyfile(confound_files[idx],os.path.join(sub_out_dir,'sub-' + sub_id + '_ses-' + session + '_desc-confounds_timeseries.tsv'))
-        shutil.copyfile(movement[idx],os.path.join(sub_out_dir,'sub-' + sub_id + '_ses-' + session + '_movement.png'))
-        shutil.copyfile(rotation[idx],os.path.join(sub_out_dir,'sub-' + sub_id + '_ses-' + session + '_rotation.png'))
-        shutil.copyfile(translation[idx],os.path.join(sub_out_dir,'sub-' + sub_id + '_ses-' + session + '_translation.png'))
+        shutil.copyfile(mc_files[idx],os.path.join(sub_out_dir,'sub-' + sub_id + '_ses-' + sess_id + '_desc-mc_pet.nii.gz'))
+        shutil.copyfile(confound_files[idx],os.path.join(sub_out_dir,'sub-' + sub_id + '_ses-' + sess_id + '_desc-confounds_timeseries.tsv'))
+        shutil.copyfile(movement[idx],os.path.join(sub_out_dir,'sub-' + sub_id + '_ses-' + sess_id + '_movement.png'))
+        shutil.copyfile(rotation[idx],os.path.join(sub_out_dir,'sub-' + sub_id + '_ses-' + sess_id + '_rotation.png'))
+        shutil.copyfile(translation[idx],os.path.join(sub_out_dir,'sub-' + sub_id + '_ses-' + sess_id + '_translation.png'))
         
+        source_file = layout.get(suffix='pet', subject=sub_id, session=sess_id, extension=['.nii', '.nii.gz'], return_type='filename')[0]
+
         hmc_json = {
             "Description": "Motion-corrected PET file",
-            "Sources": "",
+            "Sources": source_file,
             "ReferenceImage": "Robust template using mri_robust_register",
             "CostFunction": "ROB",
+            "MC treshold": f"{args.mc_thresh}",
+            "MC FWHM": f"{args.mc_fwhm}",
+            "MC start time": f"{args.mc_start_time}",
             "QC": "",
             "SoftwareName": "PETPrep HMC workflow",
-            "SoftwareVersion": "v. 0.0.1"
+            "SoftwareVersion": str(__version__),
+            "CommandLine": " ".join(sys.argv)
             }
         
         json_object = json.dumps(hmc_json, indent = 4)
-        with open(os.path.join(sub_out_dir,'sub-' + sub_id + '_ses-' + session + '_desc-mc_pet.json'), "w") as outfile:
+        with open(os.path.join(sub_out_dir,'sub-' + sub_id + '_ses-' + sess_id + '_desc-mc_pet.json'), "w") as outfile:
             outfile.write(json_object)
         
      # remove temp outputs
@@ -270,9 +281,9 @@ def lta2mat(in_file):
     mat_list = [ext.replace('.lta','.mat') for ext in in_file]
     return mat_list 
 
-def get_min_frame(json_file):  
+def get_min_frame(json_file, mc_start_time):  
     """
-    Function to extract the frame number after 120 seconds of mid frames of dynamic PET data to be used with motion correction
+    Function to extract the frame number after mc_start_time (default=120) seconds of mid frames of dynamic PET data to be used with motion correction
         
     Parameters
     ----------
@@ -295,7 +306,7 @@ def get_min_frame(json_file):
         mid_frames = frames_start + frames_duration/2
 
         min_frame = next(x for x, val in enumerate(mid_frames)
-                                  if val > 120)    
+                                  if val > mc_start_time)    
     return min_frame  
 
 
@@ -437,7 +448,11 @@ if __name__ == '__main__':
                    'provided all subjects should be analyzed. Multiple '
                    'participants can be specified with a space separated list.',
                    nargs="+", default=None)
+    parser.add_argument('--mc_start_time', help='Start time for when to perform motion correction (subsequent frame will be chosen) in seconds', default=120)
+    parser.add_argument('--mc_fwhm', help='FWHM for smoothing of frames prior to estimating motion', default=10)
+    parser.add_argument('--mc_thresh', help='Threshold below the following percentage (0-100) of framewise ROBUST RANGE prior to estimating motion correction', default=20)
     parser.add_argument('--n_procs', help='Number of processors to use when running the workflow', default=2)
+    parser.add_argument('--no_resample', help='Whether or not to resample the motion corrected PET data to lowest x/y/z dim in original data', action='store_true')
     parser.add_argument('--skip_bids_validator', help='Whether or not to perform BIDS dataset validation',
                    action='store_true')
     parser.add_argument('-v', '--version', action='version',
