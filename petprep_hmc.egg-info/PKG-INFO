@@ -1,0 +1,17 @@
+Metadata-Version: 2.1
+Name: petprep-hmc
+Version: 0.0.4
+Summary: PETPrep Head Motion Correction Workflow
+Home-page: https://github.com/mnoergaard/petprep_hmc
+Author: Martin Norgaard
+Author-email: martin.noergaard@di.ku.dk
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Provides-Extra: dev
+License-File: LICENSE
