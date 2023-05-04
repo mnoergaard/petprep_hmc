@@ -53,7 +53,7 @@ def main(args):
                         fields = ['subject_id','session_id']),
                         name = "infosource")
     
-        sessions = layout.get_sessions()
+    sessions = layout.get_sessions()
     if sessions:
         infosource.iterables = [('subject_id', args.participant_label),
                                 ('session_id', sessions)]
@@ -181,27 +181,27 @@ def main(args):
     translation = glob.glob(os.path.join(Path(args.bids_dir),'petprep_hmc_wf','*','*','translation.png'))
     
     for idx, x in enumerate(mc_files):
-    sub_id = re.findall('subject_id_(.*)/concat', mc_files[idx])[0]
-    
-    if sessions:
-        sess_id = re.findall('session_id_(.*)_subject_id', mc_files[idx])[0]
-        sub_out_dir = Path(os.path.join(output_dir, 'sub-' + sub_id, 'ses-' + sess_id))
-        file_prefix = f'sub-{sub_id}_ses-{sess_id}'
-    else:
-        sub_out_dir = Path(os.path.join(output_dir, 'sub-' + sub_id))
-        file_prefix = f'sub-{sub_id}'
-    
-    os.makedirs(sub_out_dir, exist_ok=True)
-    shutil.copyfile(mc_files[idx], os.path.join(sub_out_dir, f'{file_prefix}_desc-mc_pet.nii.gz'))
-    shutil.copyfile(confound_files[idx], os.path.join(sub_out_dir, f'{file_prefix}_desc-confounds_timeseries.tsv'))
-    shutil.copyfile(movement[idx], os.path.join(sub_out_dir, f'{file_prefix}_movement.png'))
-    shutil.copyfile(rotation[idx], os.path.join(sub_out_dir, f'{file_prefix}_rotation.png'))
-    shutil.copyfile(translation[idx], os.path.join(sub_out_dir, f'{file_prefix}_translation.png'))
-    
-    if sessions:
-        source_file = layout.get(suffix='pet', subject=sub_id, session=sess_id, extension=['.nii', '.nii.gz'], return_type='filename')[0]
-    else:
-        source_file = layout.get(suffix='pet', subject=sub_id, extension=['.nii', '.nii.gz'], return_type='filename')[0]
+        sub_id = re.findall('subject_id_(.*)/concat', mc_files[idx])[0]
+        
+        if sessions:
+            sess_id = re.findall('session_id_(.*)_subject_id', mc_files[idx])[0]
+            sub_out_dir = Path(os.path.join(output_dir, 'sub-' + sub_id, 'ses-' + sess_id))
+            file_prefix = f'sub-{sub_id}_ses-{sess_id}'
+        else:
+            sub_out_dir = Path(os.path.join(output_dir, 'sub-' + sub_id))
+            file_prefix = f'sub-{sub_id}'
+        
+        os.makedirs(sub_out_dir, exist_ok=True)
+        shutil.copyfile(mc_files[idx], os.path.join(sub_out_dir, f'{file_prefix}_desc-mc_pet.nii.gz'))
+        shutil.copyfile(confound_files[idx], os.path.join(sub_out_dir, f'{file_prefix}_desc-confounds_timeseries.tsv'))
+        shutil.copyfile(movement[idx], os.path.join(sub_out_dir, f'{file_prefix}_movement.png'))
+        shutil.copyfile(rotation[idx], os.path.join(sub_out_dir, f'{file_prefix}_rotation.png'))
+        shutil.copyfile(translation[idx], os.path.join(sub_out_dir, f'{file_prefix}_translation.png'))
+        
+        if sessions:
+            source_file = layout.get(suffix='pet', subject=sub_id, session=sess_id, extension=['.nii', '.nii.gz'], return_type='filename')[0]
+        else:
+            source_file = layout.get(suffix='pet', subject=sub_id, extension=['.nii', '.nii.gz'], return_type='filename')[0]
 
         hmc_json = {
             "Description": "Motion-corrected PET file",
