@@ -33,7 +33,7 @@ pip install -e .
 The package is also pip installable and can be installed using the following command
 
 <pre>
-pip install petprep-hmc==0.0.4
+pip install petprep-hmc
 </pre>
 
 ## Usage
