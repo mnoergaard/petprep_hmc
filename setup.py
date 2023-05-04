@@ -34,6 +34,7 @@ setup(
         "pybids==0.15.6",
         "sqlalchemy==1.3.24",
         "wrapt==1.15.0",
+        "niworkflows==1.7.9",
     ],
     extras_require={
         "dev": [
