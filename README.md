@@ -57,9 +57,9 @@ For example, to process participant `sub-01`, use the following command:
 
 `python3 run.py --bids_dir /data/bids_input --output_dir /data/bids_output --participant_label 01`
 
-## Output
+## Outputs
 
-The output will be saved in the specified `--output_dir` following the BIDS Derivatives standard. Preprocessed PET data will be stored in the `petprep_hmc` directory in the derivatives directory, along with the estimated motion parameters (confounds) and motion plots.
+The outputs will be saved in the directory specified by `--output_dir` or, if no output directory is specified, in `<bids_dir>/derivatives/petprep_hmc` following the BIDS Derivatives standard. Preprocessed PET data along with the estimated motion parameters (confounds) and motion plots will be stored in the output directory.
 
 ## Installation and Running the Code using Docker
 
