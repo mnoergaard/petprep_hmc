@@ -166,7 +166,10 @@ def main(args):
     wf = workflow.run(plugin='MultiProc', plugin_args={'n_procs' : int(args.n_procs)})
 
     # clean up and create derivatives directories
-    output_dir = os.path.join(args.bids_dir,'derivatives','petprep_hmc')
+    if args.output_dir is None:
+        output_dir = os.path.join(args.bids_dir,'derivatives','petprep_hmc')
+    else:
+        output_dir = args.output_dir
     
     # loop through directories and store according to BIDS
     mc_files = glob.glob(os.path.join(Path(args.bids_dir),'petprep_hmc_wf','*','*','mc.nii.gz'))
@@ -434,7 +437,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='BIDS App for PETPrep head motion correction workflow')
     parser.add_argument('--bids_dir', required=True,  help='The directory with the input dataset '
                     'formatted according to the BIDS standard.')
-    parser.add_argument('--output_dir', required=True, help='The directory where the output files '
+    parser.add_argument('--output_dir', required=False, help='The directory where the output files '
                     'should be stored. If you are running group level analysis '
                     'this folder should be prepopulated with the results of the'
                     'participant level analysis.')
