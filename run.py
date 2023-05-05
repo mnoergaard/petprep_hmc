@@ -52,12 +52,16 @@ def main(args):
     infosource = Node(IdentityInterface(
                         fields = ['subject_id','session_id']),
                         name = "infosource")
-        
-    infosource.iterables = [('subject_id', args.participant_label), 
-                        ('session_id', layout.get_sessions())]
+    
+    sessions = layout.get_sessions()
+    if sessions:
+        infosource.iterables = [('subject_id', args.participant_label),
+                                ('session_id', sessions)]
+    else:
+        infosource.iterables = [('subject_id', args.participant_label)]
 
-    templates = {'pet_file': 'sub-{subject_id}/ses-{session_id}/pet/*_pet.[n]*', 
-             'json_file': 'sub-{subject_id}/ses-{session_id}/pet/*_pet.json'}
+    templates = {'pet_file': 'sub-{subject_id}/pet/*_pet.[n]*' if not sessions else 'sub-{subject_id}/ses-{session_id}/pet/*_pet.[n]*',
+                'json_file': 'sub-{subject_id}/pet/*_pet.json' if not sessions else 'sub-{subject_id}/ses-{session_id}/pet/*_pet.json'}
            
     selectfiles = Node(SelectFiles(templates, 
                                base_directory = args.bids_dir), 
@@ -67,7 +71,8 @@ def main(args):
                          name = "datasink")
 
     substitutions = [('_subject_id', 'sub'), ('_session_id_', 'ses')]
-    subjFolders = [('sub-%s_ses-%s' % (sub,ses), 'sub-%s/ses-%s' %(sub,ses))
+    subjFolders = [('sub-%s' % (sub), 'sub-%s' % (sub))
+               for sub in layout.get_subjects()] if not sessions else [('sub-%s_ses-%s' % (sub, ses), 'sub-%s/ses-%s' % (sub, ses))
                for ses in layout.get_sessions()
                for sub in layout.get_subjects()]
 
@@ -180,16 +185,26 @@ def main(args):
     
     for idx, x in enumerate(mc_files):
         sub_id = re.findall('subject_id_(.*)/concat', mc_files[idx])[0]
-        sess_id = re.findall('session_id_(.*)_subject_id', mc_files[idx])[0]
-        sub_out_dir = Path(os.path.join(output_dir,'sub-' + sub_id,'ses-' + sess_id))
-        os.makedirs(sub_out_dir)
-        shutil.copyfile(mc_files[idx],os.path.join(sub_out_dir,'sub-' + sub_id + '_ses-' + sess_id + '_desc-mc_pet.nii.gz'))
-        shutil.copyfile(confound_files[idx],os.path.join(sub_out_dir,'sub-' + sub_id + '_ses-' + sess_id + '_desc-confounds_timeseries.tsv'))
-        shutil.copyfile(movement[idx],os.path.join(sub_out_dir,'sub-' + sub_id + '_ses-' + sess_id + '_movement.png'))
-        shutil.copyfile(rotation[idx],os.path.join(sub_out_dir,'sub-' + sub_id + '_ses-' + sess_id + '_rotation.png'))
-        shutil.copyfile(translation[idx],os.path.join(sub_out_dir,'sub-' + sub_id + '_ses-' + sess_id + '_translation.png'))
         
-        source_file = layout.get(suffix='pet', subject=sub_id, session=sess_id, extension=['.nii', '.nii.gz'], return_type='filename')[0]
+        if sessions:
+            sess_id = re.findall('session_id_(.*)_subject_id', mc_files[idx])[0]
+            sub_out_dir = Path(os.path.join(output_dir, 'sub-' + sub_id, 'ses-' + sess_id))
+            file_prefix = f'sub-{sub_id}_ses-{sess_id}'
+        else:
+            sub_out_dir = Path(os.path.join(output_dir, 'sub-' + sub_id))
+            file_prefix = f'sub-{sub_id}'
+        
+        os.makedirs(sub_out_dir, exist_ok=True)
+        shutil.copyfile(mc_files[idx], os.path.join(sub_out_dir, f'{file_prefix}_desc-mc_pet.nii.gz'))
+        shutil.copyfile(confound_files[idx], os.path.join(sub_out_dir, f'{file_prefix}_desc-confounds_timeseries.tsv'))
+        shutil.copyfile(movement[idx], os.path.join(sub_out_dir, f'{file_prefix}_movement.png'))
+        shutil.copyfile(rotation[idx], os.path.join(sub_out_dir, f'{file_prefix}_rotation.png'))
+        shutil.copyfile(translation[idx], os.path.join(sub_out_dir, f'{file_prefix}_translation.png'))
+        
+        if sessions:
+            source_file = layout.get(suffix='pet', subject=sub_id, session=sess_id, extension=['.nii', '.nii.gz'], return_type='filename')[0]
+        else:
+            source_file = layout.get(suffix='pet', subject=sub_id, extension=['.nii', '.nii.gz'], return_type='filename')[0]
 
         hmc_json = {
             "Description": "Motion-corrected PET file",
@@ -205,8 +220,8 @@ def main(args):
             "CommandLine": " ".join(sys.argv)
             }
         
-        json_object = json.dumps(hmc_json, indent = 4)
-        with open(os.path.join(sub_out_dir,'sub-' + sub_id + '_ses-' + sess_id + '_desc-mc_pet.json'), "w") as outfile:
+        json_object = json.dumps(hmc_json, indent=4)
+        with open(os.path.join(sub_out_dir, f'{file_prefix}_desc-mc_pet.json'), "w") as outfile:
             outfile.write(json_object)
         
      # remove temp outputs
