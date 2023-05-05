@@ -59,7 +59,7 @@ For example, to process participant `sub-01`, use the following command:
 
 ## Outputs
 
-The outputs will be saved in the directory specified by `--output_dir` or, if no output directory is specified, in `<bids_dir>/derivatives/petprep_hmc` following the BIDS Derivatives standard. Preprocessed PET data along with the estimated motion parameters (confounds) and motion plots will be stored in the output directory.
+Preprocessed PET data along with the estimated motion parameters (confounds) and motion plots will be stored in the directory specified by `--output_dir` or, if no output directory is specified, in `<bids_dir>/derivatives/petprep_hmc` following the BIDS Derivatives standard. 
 
 ## Installation and Running the Code using Docker
 
