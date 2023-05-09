@@ -31,7 +31,7 @@ ENV FSLDIR="/opt/fsl" \
     FSLOUTPUTTYPE=NIFTI_GZ \
     PATH="/opt/fsl/bin:$PATH"
 
-RUN curl -sL https://fsl.fmrib.ox.ac.uk/fsldownloads/fslinstaller.py -o fslinstaller.py && python3 fslinstaller.py -d /usr/local/fsl -o && echo ". /usr/local/fsl/fsl/etc/fslconf/fsl.sh" >> ~/.bashrc
+RUN curl -sL https://fsl.fmrib.ox.ac.uk/fsldownloads/fslinstaller.py -o fslinstaller.py && python3 fslinstaller.py -d /usr/local/fsl -o && echo ". /usr/local/fsl/etc/fslconf/fsl.sh" >> ~/.bashrc
 
 # Install Freesurfer
 ENV FREESURFER_HOME="/opt/freesurfer" \
