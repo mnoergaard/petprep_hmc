@@ -38,16 +38,15 @@ def main(args):
     
     # Get all PET files
     if args.participant_label is None:
-        args.participant_label = layout.get(suffix='pet', target='subject', return_type='id')
-
-    # create output derivatives directory
-    if not os.path.exists(args.output_dir):
-        os.makedirs(args.output_dir)
+        args.participant_label = layout.get(suffix='pet', target='subject', return_type='id')        
     
-    # create output directory for this pipeline
-    pipeline_dir = os.path.join(args.output_dir, 'petprep_hmc')
-    if not os.path.exists(pipeline_dir):
-        os.makedirs(pipeline_dir)
+     # clean up and create derivatives directories
+    if args.output_dir is None:
+        output_dir = os.path.join(args.bids_dir,'derivatives','petprep_hmc')
+    else:
+        output_dir = args.output_dir
+    
+    os.makedirs(output_dir)
 
     infosource = Node(IdentityInterface(
                         fields = ['subject_id','session_id']),
@@ -141,7 +140,7 @@ def main(args):
     plot_motion = Node(Function(input_names = ['in_file'],
                                            function = plot_motion_outputs),
                                name = "plot_motion")
-    
+
     # Connect workflow - init_pet_hmc_wf
     workflow = Workflow(name = "petprep_hmc_wf", base_dir=args.bids_dir)
     workflow.config['execution']['remove_unnecessary_outputs'] = 'false'
@@ -169,12 +168,6 @@ def main(args):
                          (hmc_movement_output,plot_motion,[('hmc_confounds','in_file')])
                          ])
     wf = workflow.run(plugin='MultiProc', plugin_args={'n_procs' : int(args.n_procs)})
-
-    # clean up and create derivatives directories
-    if args.output_dir is None:
-        output_dir = os.path.join(args.bids_dir,'derivatives','petprep_hmc')
-    else:
-        output_dir = args.output_dir
     
     # loop through directories and store according to BIDS
     mc_files = glob.glob(os.path.join(Path(args.bids_dir),'petprep_hmc_wf','*','*','mc.nii.gz'))
