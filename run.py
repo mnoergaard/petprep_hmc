@@ -16,6 +16,7 @@ import re
 import shutil
 import json
 from niworkflows.utils.misc import check_valid_fs_license
+from petprep_hmc.utils import plot_mc_dynamic_pet
 
 __version__ = open(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 'version')).read()
@@ -46,7 +47,7 @@ def main(args):
     else:
         output_dir = args.output_dir
     
-    os.makedirs(output_dir)
+    os.makedirs(output_dir, exist_ok=True)
 
     infosource = Node(IdentityInterface(
                         fields = ['subject_id','session_id']),
@@ -216,6 +217,9 @@ def main(args):
         json_object = json.dumps(hmc_json, indent=4)
         with open(os.path.join(sub_out_dir, f'{file_prefix}_desc-mc_pet.json'), "w") as outfile:
             outfile.write(json_object)
+
+        # Plot with and without motion correction
+        plot_mc_dynamic_pet(source_file, mc_files[idx], sub_out_dir, file_prefix)
         
      # remove temp outputs
     shutil.rmtree(os.path.join(args.bids_dir, 'petprep_hmc_wf'))
