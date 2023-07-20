@@ -142,33 +142,34 @@ def main(args):
                                            function = plot_motion_outputs),
                                name = "plot_motion")
 
-    # Connect workflow - init_pet_hmc_wf
-    workflow = Workflow(name = "petprep_hmc_wf", base_dir=args.bids_dir)
-    workflow.config['execution']['remove_unnecessary_outputs'] = 'false'
-    workflow.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),('session_id', 'session_id')]), 
-                         (selectfiles, split_pet, [('pet_file', 'in_file')]),
-                         (selectfiles, est_min_frame, [('json_file', 'json_file')]),
-                         (split_pet,smooth_frame,[('out_file', 'in_file')]),
-                         (smooth_frame,thres_frame,[('smoothed_file', 'in_file')]),
-                         (thres_frame,upd_frame_list,[('out_file', 'in_file')]),
-                         (est_min_frame,upd_frame_list,[('min_frame', 'min_frame')]),
-                         (upd_frame_list,estimate_motion,[('upd_list_frames', 'in_files')]),
-                         (thres_frame,upd_transform_list,[('out_file', 'in_file')]),
-                         (est_min_frame,upd_transform_list,[('min_frame', 'min_frame')]),
-                         (upd_transform_list,estimate_motion,[('upd_list_transforms', 'transform_outputs')]),
-                         (split_pet,correct_motion,[('out_file', 'source_file')]),
-                         (estimate_motion,correct_motion,[('transform_outputs', 'reg_file')]),
-                         (estimate_motion,correct_motion,[('out_file', 'target_file')]),
-                         (split_pet,correct_motion,[(('out_file', add_mc_ext), 'transformed_file')]),
-                         (correct_motion,concat_frames,[('transformed_file', 'in_files')]),
-                         (estimate_motion,lta2xform,[('transform_outputs', 'in_lta')]),
-                         (estimate_motion,lta2xform,[(('transform_outputs', lta2mat), 'out_fsl')]),
-                         (lta2xform,est_trans_rot,[('out_fsl', 'mat_file')]),
-                         (est_trans_rot,hmc_movement_output,[('translations', 'translations'),('rot_angles', 'rot_angles'),('rotation_translation_matrix','rotation_translation_matrix')]),
-                         (upd_frame_list,hmc_movement_output,[('upd_list_frames', 'in_file')]),
-                         (hmc_movement_output,plot_motion,[('hmc_confounds','in_file')])
-                         ])
-    wf = workflow.run(plugin='MultiProc', plugin_args={'n_procs' : int(args.n_procs)})
+    if os.path.isdir(os.path.join(args.bids_dir, 'petprep_hmc_wf')):
+        # Connect workflow - init_pet_hmc_wf
+        workflow = Workflow(name = "petprep_hmc_wf", base_dir=args.bids_dir)
+        workflow.config['execution']['remove_unnecessary_outputs'] = 'false'
+        workflow.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),('session_id', 'session_id')]), 
+                            (selectfiles, split_pet, [('pet_file', 'in_file')]),
+                            (selectfiles, est_min_frame, [('json_file', 'json_file')]),
+                            (split_pet,smooth_frame,[('out_file', 'in_file')]),
+                            (smooth_frame,thres_frame,[('smoothed_file', 'in_file')]),
+                            (thres_frame,upd_frame_list,[('out_file', 'in_file')]),
+                            (est_min_frame,upd_frame_list,[('min_frame', 'min_frame')]),
+                            (upd_frame_list,estimate_motion,[('upd_list_frames', 'in_files')]),
+                            (thres_frame,upd_transform_list,[('out_file', 'in_file')]),
+                            (est_min_frame,upd_transform_list,[('min_frame', 'min_frame')]),
+                            (upd_transform_list,estimate_motion,[('upd_list_transforms', 'transform_outputs')]),
+                            (split_pet,correct_motion,[('out_file', 'source_file')]),
+                            (estimate_motion,correct_motion,[('transform_outputs', 'reg_file')]),
+                            (estimate_motion,correct_motion,[('out_file', 'target_file')]),
+                            (split_pet,correct_motion,[(('out_file', add_mc_ext), 'transformed_file')]),
+                            (correct_motion,concat_frames,[('transformed_file', 'in_files')]),
+                            (estimate_motion,lta2xform,[('transform_outputs', 'in_lta')]),
+                            (estimate_motion,lta2xform,[(('transform_outputs', lta2mat), 'out_fsl')]),
+                            (lta2xform,est_trans_rot,[('out_fsl', 'mat_file')]),
+                            (est_trans_rot,hmc_movement_output,[('translations', 'translations'),('rot_angles', 'rot_angles'),('rotation_translation_matrix','rotation_translation_matrix')]),
+                            (upd_frame_list,hmc_movement_output,[('upd_list_frames', 'in_file')]),
+                            (hmc_movement_output,plot_motion,[('hmc_confounds','in_file')])
+                            ])
+        wf = workflow.run(plugin='MultiProc', plugin_args={'n_procs' : int(args.n_procs)})
     
     # loop through directories and store according to BIDS
     mc_files = glob.glob(os.path.join(Path(args.bids_dir),'petprep_hmc_wf','*','*','mc.nii.gz'))
