@@ -142,7 +142,7 @@ def main(args):
                                            function = plot_motion_outputs),
                                name = "plot_motion")
 
-    if os.path.isdir(os.path.join(args.bids_dir, 'petprep_hmc_wf')):
+    if not os.path.isdir(os.path.join(args.bids_dir, 'petprep_hmc_wf')):
         # Connect workflow - init_pet_hmc_wf
         workflow = Workflow(name = "petprep_hmc_wf", base_dir=args.bids_dir)
         workflow.config['execution']['remove_unnecessary_outputs'] = 'false'
