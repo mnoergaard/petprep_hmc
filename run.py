@@ -17,6 +17,7 @@ import shutil
 import json
 from niworkflows.utils.misc import check_valid_fs_license
 from petprep_hmc.utils import plot_mc_dynamic_pet
+from petprep_hmc.bids import collect_data
 
 __version__ = open(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 'version')).read()
@@ -49,35 +50,117 @@ def main(args):
     
     os.makedirs(output_dir, exist_ok=True)
 
-    infosource = Node(IdentityInterface(
-                        fields = ['subject_id','session_id']),
-                        name = "infosource")
+    main = init_petprep_hmc_wf()
+    main.run(plugin='MultiProc', plugin_args={'n_procs' : int(args.n_procs),
+                                              'memory_gb': 20})
     
-    sessions = layout.get_sessions()
-    if sessions:
-        infosource.iterables = [('subject_id', args.participant_label),
-                                ('session_id', sessions)]
-    else:
-        infosource.iterables = [('subject_id', args.participant_label)]
+    # loop through directories and store according to BIDS
+    mc_files = glob.glob(os.path.join(Path(args.bids_dir),'petprep_hmc_wf','*','*','*','mc.nii.gz'))
+    confound_files = glob.glob(os.path.join(Path(args.bids_dir),'petprep_hmc_wf','*','*','*','hmc_confounds.tsv'))
+    movement = glob.glob(os.path.join(Path(args.bids_dir),'petprep_hmc_wf','*','*','*','movement.png'))
+    rotation = glob.glob(os.path.join(Path(args.bids_dir),'petprep_hmc_wf','*','*','*','rotation.png'))
+    translation = glob.glob(os.path.join(Path(args.bids_dir),'petprep_hmc_wf','*','*','*','translation.png'))
+    
+    for idx, x in enumerate(mc_files):
+        match_sub_id = re.search(r'sub-([A-Za-z0-9]+)_', mc_files[idx])
+        sub_id = match_sub_id.group(1)
+        
+        match_ses_id = re.search(r'ses-([A-Za-z0-9]+)_', mc_files[idx])
+        ses_id = match_ses_id.group(1)
+        
+        match_file_prefix = re.search(r'_pet_file_(.*?)_pet', mc_files[idx])
+        file_prefix = match_file_prefix.group(1)
+        
+        if ses_id:
+            sub_out_dir = Path(os.path.join(output_dir, 'sub-' + sub_id, 'ses-' + ses_id))
+        else:
+            sub_out_dir = Path(os.path.join(output_dir, 'sub-' + sub_id))
+        
+        os.makedirs(sub_out_dir, exist_ok=True)
+        shutil.copyfile(mc_files[idx], os.path.join(sub_out_dir, f'{file_prefix}_desc-mc_pet.nii.gz'))
+        shutil.copyfile(confound_files[idx], os.path.join(sub_out_dir, f'{file_prefix}_desc-confounds_timeseries.tsv'))
+        shutil.copyfile(movement[idx], os.path.join(sub_out_dir, f'{file_prefix}_movement.png'))
+        shutil.copyfile(rotation[idx], os.path.join(sub_out_dir, f'{file_prefix}_rotation.png'))
+        shutil.copyfile(translation[idx], os.path.join(sub_out_dir, f'{file_prefix}_translation.png'))
+            
+        if ses_id:
+            source_file = layout.get(suffix='pet', subject=sub_id, session=ses_id, extension=['.nii', '.nii.gz'], return_type='filename')[0]
+        else:
+            source_file = layout.get(suffix='pet', subject=sub_id, extension=['.nii', '.nii.gz'], return_type='filename')[0]
 
-    templates = {'pet_file': 'sub-{subject_id}/pet/*_pet.[n]*' if not sessions else 'sub-{subject_id}/ses-{session_id}/pet/*_pet.[n]*',
-                'json_file': 'sub-{subject_id}/pet/*_pet.json' if not sessions else 'sub-{subject_id}/ses-{session_id}/pet/*_pet.json'}
-           
+        hmc_json = {
+            "Description": "Motion-corrected PET file",
+            "Sources": source_file,
+            "ReferenceImage": "Robust template using mri_robust_register",
+            "CostFunction": "ROB",
+            "MCTreshold": f"{args.mc_thresh}",
+            "MCFWHM": f"{args.mc_fwhm}",
+            "MCStartTime": f"{args.mc_start_time}",
+            "QC": "",
+            "SoftwareName": "PETPrep HMC workflow",
+            "SoftwareVersion": str(__version__),
+            "CommandLine": " ".join(sys.argv)
+            }
+        
+        json_object = json.dumps(hmc_json, indent=4)
+        with open(os.path.join(sub_out_dir, f'{file_prefix}_desc-mc_pet.json'), "w") as outfile:
+            outfile.write(json_object)
+
+        # Plot with and without motion correction
+        plot_mc_dynamic_pet(source_file, mc_files[idx], sub_out_dir, file_prefix)
+        
+     # remove temp outputs
+    shutil.rmtree(os.path.join(args.bids_dir, 'petprep_hmc_wf'))
+
+def init_petprep_hmc_wf():
+    from bids import BIDSLayout
+
+    layout = BIDSLayout(args.bids_dir, validate=False)
+
+    petprep_hmc_wf = Workflow(name='petprep_hmc_wf', base_dir=args.bids_dir)
+
+    # Define the subjects to iterate over
+    subject_list = layout.get(return_type='id', target='subject', suffix='pet')
+
+    # Set up the main workflow to iterate over subjects
+    for subject_id in subject_list:
+        # For each subject, create a subject-specific workflow
+        subject_wf = init_single_subject_wf(subject_id)
+        petprep_hmc_wf.add_nodes([subject_wf])
+
+    return petprep_hmc_wf
+
+def init_single_subject_wf(subject_id):
+    from bids import BIDSLayout
+
+    layout = BIDSLayout(args.bids_dir, validate=False)
+
+    # Create a new workflow for this specific subject
+    subject_wf = Workflow(name=f'subject_{subject_id}_wf', base_dir='.')
+
+    subject_data = collect_data(layout,
+                            participant_label=subject_id)[0]['pet']
+    
+    # This function will strip the extension(s) from a filename
+    def strip_extensions(filename):
+        while os.path.splitext(filename)[1]:
+            filename = os.path.splitext(filename)[0]
+        return filename
+
+    # Use os.path.basename to get the last part of the path and then remove the extensions
+    cleaned_subject_data = [strip_extensions(os.path.basename(path)) for path in subject_data]
+    
+    inputs = Node(IdentityInterface(fields=['pet_file']), name='inputs')
+    inputs.iterables = ('pet_file', cleaned_subject_data)
+    
+    sessions = layout.get_sessions(subject=subject_id)
+    
+    templates = {'pet_file': 's*/pet/*{pet_file}.[n]*' if not sessions else 's*/s*/pet/*{pet_file}.[n]*',
+                'json_file': 's*/pet/*{pet_file}.json' if not sessions else 's*/s*/pet/*{pet_file}.json'}
+               
     selectfiles = Node(SelectFiles(templates, 
                                base_directory = args.bids_dir), 
                                name = "select_files")
-
-    datasink = Node(DataSink(base_directory = os.path.join(args.bids_dir, 'derivatives')), 
-                         name = "datasink")
-
-    substitutions = [('_subject_id', 'sub'), ('_session_id_', 'ses')]
-    subjFolders = [('sub-%s' % (sub), 'sub-%s' % (sub))
-               for sub in layout.get_subjects()] if not sessions else [('sub-%s_ses-%s' % (sub, ses), 'sub-%s/ses-%s' % (sub, ses))
-               for ses in layout.get_sessions()
-               for sub in layout.get_subjects()]
-
-    substitutions.extend(subjFolders)
-    datasink.inputs.substitutions = substitutions
 
     # Define nodes for hmc workflow
 
@@ -142,88 +225,31 @@ def main(args):
                                            function = plot_motion_outputs),
                                name = "plot_motion")
 
-    if not os.path.isdir(os.path.join(args.bids_dir, 'petprep_hmc_wf')):
-        # Connect workflow - init_pet_hmc_wf
-        workflow = Workflow(name = "petprep_hmc_wf", base_dir=args.bids_dir)
-        workflow.config['execution']['remove_unnecessary_outputs'] = 'false'
-        workflow.connect([(infosource, selectfiles, [('subject_id', 'subject_id'),('session_id', 'session_id')]), 
-                            (selectfiles, split_pet, [('pet_file', 'in_file')]),
-                            (selectfiles, est_min_frame, [('json_file', 'json_file')]),
-                            (split_pet,smooth_frame,[('out_file', 'in_file')]),
-                            (smooth_frame,thres_frame,[('smoothed_file', 'in_file')]),
-                            (thres_frame,upd_frame_list,[('out_file', 'in_file')]),
-                            (est_min_frame,upd_frame_list,[('min_frame', 'min_frame')]),
-                            (upd_frame_list,estimate_motion,[('upd_list_frames', 'in_files')]),
-                            (thres_frame,upd_transform_list,[('out_file', 'in_file')]),
-                            (est_min_frame,upd_transform_list,[('min_frame', 'min_frame')]),
-                            (upd_transform_list,estimate_motion,[('upd_list_transforms', 'transform_outputs')]),
-                            (split_pet,correct_motion,[('out_file', 'source_file')]),
-                            (estimate_motion,correct_motion,[('transform_outputs', 'reg_file')]),
-                            (estimate_motion,correct_motion,[('out_file', 'target_file')]),
-                            (split_pet,correct_motion,[(('out_file', add_mc_ext), 'transformed_file')]),
-                            (correct_motion,concat_frames,[('transformed_file', 'in_files')]),
-                            (estimate_motion,lta2xform,[('transform_outputs', 'in_lta')]),
-                            (estimate_motion,lta2xform,[(('transform_outputs', lta2mat), 'out_fsl')]),
-                            (lta2xform,est_trans_rot,[('out_fsl', 'mat_file')]),
-                            (est_trans_rot,hmc_movement_output,[('translations', 'translations'),('rot_angles', 'rot_angles'),('rotation_translation_matrix','rotation_translation_matrix')]),
-                            (upd_frame_list,hmc_movement_output,[('upd_list_frames', 'in_file')]),
-                            (hmc_movement_output,plot_motion,[('hmc_confounds','in_file')])
-                            ])
-        wf = workflow.run(plugin='MultiProc', plugin_args={'n_procs' : int(args.n_procs)})
-    
-    # loop through directories and store according to BIDS
-    mc_files = glob.glob(os.path.join(Path(args.bids_dir),'petprep_hmc_wf','*','*','mc.nii.gz'))
-    confound_files = glob.glob(os.path.join(Path(args.bids_dir),'petprep_hmc_wf','*','*','hmc_confounds.tsv'))
-    movement = glob.glob(os.path.join(Path(args.bids_dir),'petprep_hmc_wf','*','*','movement.png'))
-    rotation = glob.glob(os.path.join(Path(args.bids_dir),'petprep_hmc_wf','*','*','rotation.png'))
-    translation = glob.glob(os.path.join(Path(args.bids_dir),'petprep_hmc_wf','*','*','translation.png'))
-    
-    for idx, x in enumerate(mc_files):
-        sub_id = re.findall('subject_id_(.*)/concat', mc_files[idx])[0]
-        
-        if sessions:
-            sess_id = re.findall('session_id_(.*)_subject_id', mc_files[idx])[0]
-            sub_out_dir = Path(os.path.join(output_dir, 'sub-' + sub_id, 'ses-' + sess_id))
-            file_prefix = f'sub-{sub_id}_ses-{sess_id}'
-        else:
-            sub_out_dir = Path(os.path.join(output_dir, 'sub-' + sub_id))
-            file_prefix = f'sub-{sub_id}'
-        
-        os.makedirs(sub_out_dir, exist_ok=True)
-        shutil.copyfile(mc_files[idx], os.path.join(sub_out_dir, f'{file_prefix}_desc-mc_pet.nii.gz'))
-        shutil.copyfile(confound_files[idx], os.path.join(sub_out_dir, f'{file_prefix}_desc-confounds_timeseries.tsv'))
-        shutil.copyfile(movement[idx], os.path.join(sub_out_dir, f'{file_prefix}_movement.png'))
-        shutil.copyfile(rotation[idx], os.path.join(sub_out_dir, f'{file_prefix}_rotation.png'))
-        shutil.copyfile(translation[idx], os.path.join(sub_out_dir, f'{file_prefix}_translation.png'))
-        
-        if sessions:
-            source_file = layout.get(suffix='pet', subject=sub_id, session=sess_id, extension=['.nii', '.nii.gz'], return_type='filename')[0]
-        else:
-            source_file = layout.get(suffix='pet', subject=sub_id, extension=['.nii', '.nii.gz'], return_type='filename')[0]
-
-        hmc_json = {
-            "Description": "Motion-corrected PET file",
-            "Sources": source_file,
-            "ReferenceImage": "Robust template using mri_robust_register",
-            "CostFunction": "ROB",
-            "MCTreshold": f"{args.mc_thresh}",
-            "MCFWHM": f"{args.mc_fwhm}",
-            "MCStartTime": f"{args.mc_start_time}",
-            "QC": "",
-            "SoftwareName": "PETPrep HMC workflow",
-            "SoftwareVersion": str(__version__),
-            "CommandLine": " ".join(sys.argv)
-            }
-        
-        json_object = json.dumps(hmc_json, indent=4)
-        with open(os.path.join(sub_out_dir, f'{file_prefix}_desc-mc_pet.json'), "w") as outfile:
-            outfile.write(json_object)
-
-        # Plot with and without motion correction
-        plot_mc_dynamic_pet(source_file, mc_files[idx], sub_out_dir, file_prefix)
-        
-     # remove temp outputs
-    shutil.rmtree(os.path.join(args.bids_dir, 'petprep_hmc_wf'))
+    # Connect workflow - init_pet_hmc_wf
+    subject_wf.connect([(inputs, selectfiles, [('pet_file', 'pet_file')]),
+                        (selectfiles, split_pet, [('pet_file', 'in_file')]),
+                        (selectfiles, est_min_frame, [('json_file', 'json_file')]),
+                        (split_pet,smooth_frame,[('out_file', 'in_file')]),
+                        (smooth_frame,thres_frame,[('smoothed_file', 'in_file')]),
+                        (thres_frame,upd_frame_list,[('out_file', 'in_file')]),
+                        (est_min_frame,upd_frame_list,[('min_frame', 'min_frame')]),
+                        (upd_frame_list,estimate_motion,[('upd_list_frames', 'in_files')]),
+                        (thres_frame,upd_transform_list,[('out_file', 'in_file')]),
+                        (est_min_frame,upd_transform_list,[('min_frame', 'min_frame')]),
+                        (upd_transform_list,estimate_motion,[('upd_list_transforms', 'transform_outputs')]),
+                        (split_pet,correct_motion,[('out_file', 'source_file')]),
+                        (estimate_motion,correct_motion,[('transform_outputs', 'reg_file')]),
+                        (estimate_motion,correct_motion,[('out_file', 'target_file')]),
+                        (split_pet,correct_motion,[(('out_file', add_mc_ext), 'transformed_file')]),
+                        (correct_motion,concat_frames,[('transformed_file', 'in_files')]),
+                        (estimate_motion,lta2xform,[('transform_outputs', 'in_lta')]),
+                        (estimate_motion,lta2xform,[(('transform_outputs', lta2mat), 'out_fsl')]),
+                        (lta2xform,est_trans_rot,[('out_fsl', 'mat_file')]),
+                        (est_trans_rot,hmc_movement_output,[('translations', 'translations'),('rot_angles', 'rot_angles'),('rotation_translation_matrix','rotation_translation_matrix')]),
+                        (upd_frame_list,hmc_movement_output,[('upd_list_frames', 'in_file')]),
+                        (hmc_movement_output,plot_motion,[('hmc_confounds','in_file')])
+                        ])
+    return subject_wf
 
     # HELPER FUNCTIONS
 def update_list_frames(in_file, min_frame):   
