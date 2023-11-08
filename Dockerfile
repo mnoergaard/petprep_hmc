@@ -31,14 +31,17 @@ ENV FSLDIR="/opt/fsl" \
     FSLOUTPUTTYPE=NIFTI_GZ \
     PATH="/opt/fsl/bin:$PATH"
 
-RUN curl -sL https://fsl.fmrib.ox.ac.uk/fsldownloads/fslinstaller.py -o fslinstaller.py && python3 fslinstaller.py -d /usr/local/fsl -o && echo ". /usr/local/fsl/fsl/etc/fslconf/fsl.sh" >> ~/.bashrc
+RUN curl -sL https://fsl.fmrib.ox.ac.uk/fsldownloads/fslinstaller.py -o fslinstaller.py && python3 fslinstaller.py -d /opt/fsl -o && echo ". /opt/fsl/fsl/etc/fslconf/fsl.sh" >> ~/.bashrc
 
 # Install Freesurfer
 ENV FREESURFER_HOME="/opt/freesurfer" \
-    PATH="/opt/freesurfer/bin:$PATH"
+    PATH="/opt/freesurfer/bin:$PATH" \
+    SUBJECTS_DIR="/data/output/derivatives/freesurfer"
 
-RUN curl -sL https://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/7.3.2/freesurfer-linux-centos7_x86_64-7.3.2.tar.gz | tar xzC /opt && \
+RUN curl -sL https://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/7.4.1/freesurfer-linux-centos7_x86_64-7.4.1.tar.gz | tar xzC /opt && \
     echo ". /opt/freesurfer/SetUpFreeSurfer.sh" >> ~/.bashrc
+
+ENV PATH="/usr/local/bin:$PATH"
 
 # Install BIDS application and its dependencies
 RUN pip3 install numpy nibabel pybids bids-validator

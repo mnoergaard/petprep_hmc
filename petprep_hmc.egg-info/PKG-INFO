@@ -13,5 +13,32 @@ Classifier: Programming Language :: Python :: 3.6
 Classifier: Programming Language :: Python :: 3.7
 Classifier: Programming Language :: Python :: 3.8
 Classifier: Programming Language :: Python :: 3.9
-Provides-Extra: dev
 License-File: LICENSE
+Requires-Dist: click==8.1.3
+Requires-Dist: contourpy==1.0.7
+Requires-Dist: matplotlib==3.7.1
+Requires-Dist: networkx==3.1
+Requires-Dist: nibabel==5.1.0
+Requires-Dist: nipype==1.8.6
+Requires-Dist: numpy==1.24.2
+Requires-Dist: pandas==2.0.0
+Requires-Dist: patsy==0.5.3
+Requires-Dist: pillow==9.5.0
+Requires-Dist: scipy==1.10.1
+Requires-Dist: seaborn==0.12.2
+Requires-Dist: statsmodels==0.13.5
+Requires-Dist: traits==6.3.2
+Requires-Dist: rdflib==6.3.2
+Requires-Dist: astor==0.8.1
+Requires-Dist: bids==0.0
+Requires-Dist: bids-validator==1.11.0
+Requires-Dist: docopt==0.6.2
+Requires-Dist: formulaic==0.5.2
+Requires-Dist: interface-meta==1.3.0
+Requires-Dist: num2words==0.5.12
+Requires-Dist: pybids==0.15.6
+Requires-Dist: sqlalchemy==1.3.24
+Requires-Dist: wrapt==1.15.0
+Requires-Dist: niworkflows==1.7.9
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
