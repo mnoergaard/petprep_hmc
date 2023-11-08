@@ -51,8 +51,7 @@ def main(args):
     os.makedirs(output_dir, exist_ok=True)
 
     main = init_petprep_hmc_wf()
-    main.run(plugin='MultiProc', plugin_args={'n_procs' : int(args.n_procs),
-                                              'memory_gb': 20})
+    main.run(plugin='MultiProc', plugin_args={'n_procs' : int(args.n_procs)})
     
     # loop through directories and store according to BIDS
     mc_files = glob.glob(os.path.join(Path(args.bids_dir),'petprep_hmc_wf','*','*','*','mc.nii.gz'))
