@@ -24,6 +24,7 @@ __version__ = open(os.path.join(os.path.dirname(os.path.realpath(__file__)),
 
 def main(args): 
     
+    # Check whether BIDS directory exists and instantiate BIDSLayout
     if os.path.exists(args.bids_dir):
         if not args.skip_bids_validator:
             layout = BIDSLayout(args.bids_dir, validate=True)
@@ -32,9 +33,11 @@ def main(args):
     else:
         raise Exception('BIDS directory does not exist')
     
+    # Check whether FreeSurfer license is valid
     if check_valid_fs_license() is not True:
         raise Exception('You need a valid FreeSurfer license to proceed!')
     
+    # Check whether FSL is installed
     if check_fsl_installed() is not True:
         raise Exception('FSL is not installed or sourced')
     
@@ -42,7 +45,7 @@ def main(args):
     if args.participant_label is None:
         args.participant_label = layout.get(suffix='pet', target='subject', return_type='id')        
     
-     # clean up and create derivatives directories
+     # Create derivatives directories
     if args.output_dir is None:
         output_dir = os.path.join(args.bids_dir,'derivatives','petprep_hmc')
     else:
@@ -50,10 +53,11 @@ def main(args):
     
     os.makedirs(output_dir, exist_ok=True)
 
+    # Run workflow
     main = init_petprep_hmc_wf()
     main.run(plugin='MultiProc', plugin_args={'n_procs' : int(args.n_procs)})
     
-    # loop through directories and store according to BIDS
+    # Loop through directories and store according to PET-BIDS specification
     mc_files = glob.glob(os.path.join(Path(args.bids_dir),'petprep_hmc_wf','*','*','*','mc.nii.gz'))
     confound_files = glob.glob(os.path.join(Path(args.bids_dir),'petprep_hmc_wf','*','*','*','hmc_confounds.tsv'))
     movement = glob.glob(os.path.join(Path(args.bids_dir),'petprep_hmc_wf','*','*','*','movement.png'))
@@ -108,7 +112,7 @@ def main(args):
         # Plot with and without motion correction
         plot_mc_dynamic_pet(source_file, mc_files[idx], sub_out_dir, file_prefix)
         
-     # remove temp outputs
+     # Remove temp outputs
     shutil.rmtree(os.path.join(args.bids_dir, 'petprep_hmc_wf'))
 
 def init_petprep_hmc_wf():
