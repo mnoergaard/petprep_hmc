@@ -36,7 +36,7 @@ RUN curl -sL https://fsl.fmrib.ox.ac.uk/fsldownloads/fslinstaller.py -o fslinsta
 # Install Freesurfer
 ENV FREESURFER_HOME="/opt/freesurfer" \
     PATH="/opt/freesurfer/bin:$PATH" \
-    SUBJECTS_DIR="/data/output/derivatives/freesurfer"
+    SUBJECTS_DIR="/data/output"
 
 RUN curl -sL https://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/7.4.1/freesurfer-linux-centos7_x86_64-7.4.1.tar.gz | tar xzC /opt && \
     echo ". /opt/freesurfer/SetUpFreeSurfer.sh" >> ~/.bashrc
@@ -47,7 +47,7 @@ ENV PATH="/usr/local/bin:$PATH"
 RUN pip3 install numpy nibabel pybids bids-validator
 
 # Clone and install petprep_hmc from GitHub
-RUN git clone https://github.com/mnoergaard/petprep_hmc.git /opt/petprep_hmc
+RUN rm -rf /opt/petprep_hmc && git clone https://github.com/mnoergaard/petprep_hmc.git /opt/petprep_hmc
 RUN pip3 install --no-cache-dir -e /opt/petprep_hmc
 
 # BIDS App entry point
