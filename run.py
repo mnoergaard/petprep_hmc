@@ -1,4 +1,4 @@
-import argparse 
+import argparse
 import os
 import sys
 from bids import BIDSLayout
@@ -22,86 +22,6 @@ __version__ = open(os.path.join(os.path.dirname(os.path.realpath(__file__)),
 
 
 def main(args):
-    # Check whether BIDS directory exists and instantiate BIDSLayout
-    if os.path.exists(args.bids_dir):
-
-        if not args.skip_bids_validator:
-            layout = BIDSLayout(args.bids_dir, validate=True)
-        else:
-            layout = BIDSLayout(args.bids_dir, validate=False)
-
-    else:
-        raise Exception('BIDS directory does not exist')
-
-    # Check whether FreeSurfer license is valid
-    if check_valid_fs_license() is not True:
-        raise Exception('You need a valid FreeSurfer license to proceed!')
-
-    # Check whether FSL is installed
-    if check_fsl_installed() is not True:
-        raise Exception('FSL is not installed or sourced')
-
-    # Get all PET files
-    if args.participant_label is None:
-        args.participant_label = layout.get(suffix='pet', target='subject', return_type='id')
-
-    # Create derivatives directories
-    if args.output_dir is None:
-        output_dir = os.path.join(args.bids_dir, 'derivatives', 'petprep_hmc')
-    else:
-        output_dir = args.output_dir
-
-    os.makedirs(output_dir, exist_ok=True)
-
-    # Run workflow
-    main = init_petprep_hmc_wf()
-    main.run(plugin='MultiProc', plugin_args={'n_procs': int(args.n_procs)})
-
-    # Loop through directories and store according to PET-BIDS specification
-    mc_files = glob.glob(os.path.join(Path(args.bids_dir), 'petprep_hmc_wf', '*', '*', '*', 'mc.nii.gz'))
-    confound_files = glob.glob(os.path.join(Path(args.bids_dir), 'petprep_hmc_wf', '*', '*', '*', 'hmc_confounds.tsv'))
-    movement = glob.glob(os.path.join(Path(args.bids_dir), 'petprep_hmc_wf', '*', '*', '*', 'movement.png'))
-    rotation = glob.glob(os.path.join(Path(args.bids_dir), 'petprep_hmc_wf', '*', '*', '*', 'rotation.png'))
-    translation = glob.glob(os.path.join(Path(args.bids_dir), 'petprep_hmc_wf', '*', '*', '*', 'translation.png'))
-
-    for idx, x in enumerate(mc_files):
-        match_sub_id = re.search(r'sub-([A-Za-z0-9]+)_', mc_files[idx])
-        sub_id = match_sub_id.group(1)
-
-        match_ses_id = re.search(r'ses-([A-Za-z0-9]+)_', mc_files[idx])
-        ses_id = match_ses_id.group(1)
-
-        match_file_prefix = re.search(r'_pet_file_(.*?)_pet', mc_files[idx])
-        file_prefix = match_file_prefix.group(1)
-
-        if ses_id:
-            sub_out_dir = Path(os.path.join(output_dir, 'sub-' + sub_id, 'ses-' + ses_id))
-        else:
-            sub_out_dir = Path(os.path.join(output_dir, 'sub-' + sub_id))
-
-        os.makedirs(sub_out_dir, exist_ok=True)
-        shutil.copyfile(mc_files[idx], os.path.join(sub_out_dir, f'{file_prefix}_desc-mc_pet.nii.gz'))
-        shutil.copyfile(confound_files[idx], os.path.join(sub_out_dir, f'{file_prefix}_desc-confounds_timeseries.tsv'))
-        shutil.copyfile(movement[idx], os.path.join(sub_out_dir, f'{file_prefix}_movement.png'))
-        shutil.copyfile(rotation[idx], os.path.join(sub_out_dir, f'{file_prefix}_rotation.png'))
-        shutil.copyfile(translation[idx], os.path.join(sub_out_dir, f'{file_prefix}_translation.png'))
-
-        if ses_id:
-            source_file = layout.get(suffix='pet', subject=sub_id, session=ses_id, extension=['.nii', '.nii.gz'], return_type='filename')[0]
-        else:
-            source_file = layout.get(suffix='pet', subject=sub_id, extension=['.nii', '.nii.gz'], return_type='filename')[0]
-
-        # replace with file_prefix
-        source_file = f'{os.path.dirname(source_file)}/{file_prefix}_pet.nii.gz'
-
-        hmc_json = {
-            "Description": "Motion-corrected PET file",
-            "Sources": source_file,
-            "ReferenceImage": "Robust template using mri_robust_register",
-            "CostFunction": "ROB",
-            "MCTreshold": f"{args.mc_thresh}",
-            "MCFWHM": f"{args.mc_fwhm}",
-        }
     # Check whether BIDS directory exists and instantiate BIDSLayout
     if os.path.exists(args.bids_dir):
         if not args.skip_bids_validator:
