@@ -2,12 +2,10 @@ import argparse
 import os
 import sys
 from bids import BIDSLayout
-import pandas as pd
 import nipype.interfaces.freesurfer as fs
 import nipype.interfaces.fsl as fsl
 from nipype.interfaces.utility import IdentityInterface
 from nipype.pipeline import Workflow
-from nipype.interfaces.io import DataSink
 from nipype import Node, Function, MapNode
 from nipype.interfaces.io import SelectFiles
 from pathlib import Path
@@ -91,6 +89,9 @@ def main(args):
         else:
             source_file = layout.get(suffix='pet', subject=sub_id, extension=['.nii', '.nii.gz'], return_type='filename')[0]
 
+        # replace with file_prefix
+        source_file = f'{os.path.dirname(source_file)}/{file_prefix}_pet.nii.gz'
+
         hmc_json = {
             "Description": "Motion-corrected PET file",
             "Sources": source_file,
@@ -121,6 +122,7 @@ def init_petprep_hmc_wf():
     layout = BIDSLayout(args.bids_dir, validate=False)
 
     petprep_hmc_wf = Workflow(name='petprep_hmc_wf', base_dir=args.bids_dir)
+    petprep_hmc_wf.config['execution']['remove_unnecessary_outputs'] = 'false'
 
     # Define the subjects to iterate over
     subject_list = layout.get(return_type='id', target='subject', suffix='pet')
@@ -140,6 +142,7 @@ def init_single_subject_wf(subject_id):
 
     # Create a new workflow for this specific subject
     subject_wf = Workflow(name=f'subject_{subject_id}_wf', base_dir='.')
+    subject_wf.config['execution']['remove_unnecessary_outputs'] = 'false'
 
     subject_data = collect_data(layout,
                             participant_label=subject_id)[0]['pet']
