@@ -70,7 +70,7 @@ To run petprep_hmc workflow using Docker, you must first have Docker installed o
 Once you have Docker installed, you can pull the petprep_hmc Docker image from Docker Hub by running the following command:
 
 <pre>
-docker pull martinnoergaard/petprep_hmc:v.0.0.7
+docker pull martinnoergaard/petprep_hmc:latest
 </pre>
 
 ### Running the Docker Container
