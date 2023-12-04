@@ -65,14 +65,18 @@ def main(args):
     for idx, x in enumerate(mc_files):
         match_sub_id = re.search(r'sub-([A-Za-z0-9]+)_', mc_files[idx])
         sub_id = match_sub_id.group(1)
-
+        
         match_ses_id = re.search(r'ses-([A-Za-z0-9]+)_', mc_files[idx])
-        ses_id = match_ses_id.group(1)
+
+        if match_ses_id:
+            ses_id = match_ses_id.group(1)
+        else:
+            ses_id = None
 
         match_file_prefix = re.search(r'_pet_file_(.*?)_pet', mc_files[idx])
         file_prefix = match_file_prefix.group(1)
 
-        if ses_id:
+        if ses_id is not None:
             sub_out_dir = Path(os.path.join(output_dir, 'sub-' + sub_id, 'ses-' + ses_id))
         else:
             sub_out_dir = Path(os.path.join(output_dir, 'sub-' + sub_id))
@@ -84,7 +88,7 @@ def main(args):
         shutil.copyfile(rotation[idx], os.path.join(sub_out_dir, f'{file_prefix}_rotation.png'))
         shutil.copyfile(translation[idx], os.path.join(sub_out_dir, f'{file_prefix}_translation.png'))
 
-        if ses_id:
+        if ses_id is not None:
             source_file = layout.get(suffix='pet', subject=sub_id, session=ses_id, extension=['.nii', '.nii.gz'], return_type='filename')[0]
         else:
             source_file = layout.get(suffix='pet', subject=sub_id, extension=['.nii', '.nii.gz'], return_type='filename')[0]
