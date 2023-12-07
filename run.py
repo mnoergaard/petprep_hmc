@@ -94,7 +94,7 @@ def main(args):
             source_file = layout.get(suffix='pet', subject=sub_id, extension=['.nii', '.nii.gz'], return_type='filename')[0]
 
         # replace with file_prefix
-        source_file = f'{os.path.dirname(source_file)}/{file_prefix}_pet.nii.gz'
+        #source_file = f'{os.path.dirname(source_file)}/{file_prefix}_pet{extension}'
 
         hmc_json = {
             "Description": "Motion-corrected PET file",
