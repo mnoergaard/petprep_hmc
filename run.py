@@ -510,7 +510,7 @@ if __name__ == '__main__':
     parser.add_argument('--mc_thresh', help='Threshold below the following percentage (0-100) of framewise ROBUST RANGE prior to estimating motion correction', default=20)
     parser.add_argument('--n_procs', help='Number of processors to use when running the workflow', default=2)
     parser.add_argument('--no_resample', help='Whether or not to resample the motion corrected PET data to lowest x/y/z dim in original data', action='store_true')
-    parser.add_argument('--frobnorm-thresh', help='Threshold for the Frobenius norm of the robust registration', default=0.0001)
+    parser.add_argument('--frobnorm_thresh', help='Threshold for the Frobenius norm of the robust registration', default=0.0001)
     parser.add_argument('--skip_bids_validator', help='Whether or not to perform BIDS dataset validation',
                         action='store_true')
     parser.add_argument('-v', '--version', action='version',
