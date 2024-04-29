@@ -73,6 +73,13 @@ def main(args):
         else:
             ses_id = None
 
+        match_run_id = re.search(r'run-([A-Za-z0-9]+)_', mc_files[idx])
+
+        if match_run_id:
+            run_id = match_run_id.group(1)
+        else:
+            run_id = None
+
         match_file_prefix = re.search(r'_pet_file_(.*?)_pet', mc_files[idx])
         file_prefix = match_file_prefix.group(1)
 
@@ -88,9 +95,13 @@ def main(args):
         shutil.copyfile(rotation[idx], os.path.join(sub_out_dir, f'{file_prefix}_rotation.png'))
         shutil.copyfile(translation[idx], os.path.join(sub_out_dir, f'{file_prefix}_translation.png'))
 
-        if ses_id is not None:
+        if ses_id is not None and run_id is None:
             source_file = layout.get(suffix='pet', subject=sub_id, session=ses_id, extension=['.nii', '.nii.gz'], return_type='filename')[0]
-        else:
+        elif ses_id is not None and run_id is not None:
+            source_file = layout.get(suffix='pet', subject=sub_id, session=ses_id, run=run_id, extension=['.nii', '.nii.gz'], return_type='filename')[0]
+        elif ses_id is None and run_id is not None:
+            source_file = layout.get(suffix='pet', subject=sub_id, run=run_id, extension=['.nii', '.nii.gz'], return_type='filename')[0]
+        elif ses_id is None and run_id is None:
             source_file = layout.get(suffix='pet', subject=sub_id, extension=['.nii', '.nii.gz'], return_type='filename')[0]
 
         # replace with file_prefix
