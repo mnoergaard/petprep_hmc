@@ -91,9 +91,9 @@ def main(args):
         os.makedirs(sub_out_dir, exist_ok=True)
         shutil.copyfile(mc_files[idx], os.path.join(sub_out_dir, f'{file_prefix}_desc-mc_pet.nii.gz'))
         shutil.copyfile(confound_files[idx], os.path.join(sub_out_dir, f'{file_prefix}_desc-confounds_timeseries.tsv'))
-        shutil.copyfile(movement[idx], os.path.join(sub_out_dir, f'{file_prefix}_movement.png'))
-        shutil.copyfile(rotation[idx], os.path.join(sub_out_dir, f'{file_prefix}_rotation.png'))
-        shutil.copyfile(translation[idx], os.path.join(sub_out_dir, f'{file_prefix}_translation.png'))
+        shutil.copyfile(movement[idx], os.path.join(sub_out_dir, f'{file_prefix}_desc-movement.png'))
+        shutil.copyfile(rotation[idx], os.path.join(sub_out_dir, f'{file_prefix}_desc-rotation.png'))
+        shutil.copyfile(translation[idx], os.path.join(sub_out_dir, f'{file_prefix}_desc-translation.png'))
 
         if ses_id is not None and run_id is None:
             source_file = layout.get(suffix='pet', subject=sub_id, session=ses_id, extension=['.nii', '.nii.gz'], return_type='filename')[0]
@@ -134,7 +134,7 @@ def main(args):
     dataset_description_json = {
         "Name": "PETPrep HMC workflow",
         "DatasetType": "derivative",
-        "BIDSVersion": "1.6.0",
+        "BIDSVersion": "1.7.0",
         "GeneratedBy": [
             {
                 "Name": "petprep_hmc",
