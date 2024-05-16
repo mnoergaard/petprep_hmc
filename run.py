@@ -131,6 +131,21 @@ def main(args):
     # Remove temp outputs
     shutil.rmtree(os.path.join(args.bids_dir, 'petprep_hmc_wf'))
 
+    dataset_description_json = {
+        "Name": "PETPrep HMC workflow",
+        "DatasetType": "derivative",
+        "GeneratedBy": [
+            {
+                "Name": "petprep_hmc",
+                "Version": str(__version__),
+            }
+        ]
+    }
+
+    json_object = json.dumps(dataset_description_json, indent=4)
+    with open(os.path.join(args.output_dir, 'dataset_description.json'), "w") as outfile:
+        outfile.write(json_object)
+
 
 def init_petprep_hmc_wf():
     from bids import BIDSLayout
