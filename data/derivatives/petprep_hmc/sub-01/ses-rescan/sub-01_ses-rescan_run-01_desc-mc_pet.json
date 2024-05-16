@@ -1,0 +1,13 @@
+{
+    "Description": "Motion-corrected PET file",
+    "Sources": "/Users/martinnorgaard/Documents/GitHub/petprep_hmc/data/sub-01/ses-rescan/pet/sub-01_ses-rescan_run-01_pet.nii.gz",
+    "ReferenceImage": "Robust template using mri_robust_register",
+    "CostFunction": "ROB",
+    "MCTreshold": "20",
+    "MCFWHM": "10",
+    "MCStartTime": "120",
+    "QC": "",
+    "SoftwareName": "PETPrep HMC workflow",
+    "SoftwareVersion": "0.0.7",
+    "CommandLine": "run.py --bids_dir /Users/martinnorgaard/Documents/GitHub/petprep_hmc/data --output_dir /Users/martinnorgaard/Documents/GitHub/petprep_hmc/data/derivatives/petprep_hmc --n_procs 5"
+}
