@@ -134,6 +134,7 @@ def main(args):
     dataset_description_json = {
         "Name": "PETPrep HMC workflow",
         "DatasetType": "derivative",
+        "BIDSVersion": "1.6.0",
         "GeneratedBy": [
             {
                 "Name": "petprep_hmc",
