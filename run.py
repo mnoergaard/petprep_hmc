@@ -16,6 +16,10 @@ import json
 from niworkflows.utils.misc import check_valid_fs_license
 from petprep_hmc.utils import plot_mc_dynamic_pet
 from petprep_hmc.bids import collect_data
+import os.path as op
+import yaml
+import petprep_hmc
+
 
 __version__ = open(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 'version')).read()
@@ -104,8 +108,8 @@ def main(args):
         elif ses_id is None and run_id is None:
             source_file = layout.get(suffix='pet', subject=sub_id, extension=['.nii', '.nii.gz'], return_type='filename')[0]
 
-        # replace with file_prefix
-        #source_file = f'{os.path.dirname(source_file)}/{file_prefix}_pet{extension}'
+        # create html report
+        
 
         hmc_json = {
             "Description": "Motion-corrected PET file",
@@ -290,6 +294,55 @@ def init_single_subject_wf(subject_id):
                         (hmc_movement_output, plot_motion, [('hmc_confounds', 'in_file')])
                         ])
     return subject_wf
+
+
+def display_motion_correction_html(file_prefix, sub_out_dir):
+    """
+    Load and display motion correction figures based on config settings.
+    """
+
+    report_config_path = op.join(os.path.dirname(petprep_hmc.__file__), 'docs/reports-spec.yml')
+    report_config = load_config(report_config_path)
+
+    # Start the HTML content with the basic HTML structure
+    html_content = "<html><head><title>Motion Correction Report</title></head><body>"
+    
+    for reportlet in report_config['sections'][0]['reportlets']:
+        desc = reportlet['bids']['desc']
+        extension = reportlet['bids']['extension'][0]  # Assuming only one extension per type
+        file_name = f"{file_prefix}_desc-{desc}{extension}"
+        file_path = op.join(sub_out_dir, file_name)
+        
+        if op.exists(file_path):
+            # Include title and description if available
+            title = f"<h2>{reportlet.get('subtitle', 'Motion Correction Visual')}</h2>"
+            caption = f"<p>{reportlet.get('caption', '')}</p>"
+            
+            # Generate HTML image tag or use plotly for GIFs if needed
+            img_tag = f"<img src='{file_path}' style='width:100%; max-width:{reportlet['style']['max-width']}'>"
+            
+            # Combine elements
+            html_content += title + caption + img_tag + "<br>"
+        else:
+            html_content += f"<p>File not found: {file_path}</p>"
+
+    # Close the HTML tags
+    html_content += "</body></html>"
+
+    # Write the complete HTML content to the report file
+    report_file_path = op.join(sub_out_dir, f"{file_prefix}_report.html")
+    with open(report_file_path, "w") as report_file:
+        report_file.write(html_content)
+
+
+def load_config(filepath):
+    """
+    Load a YAML configuration file.
+    :param filepath: str, path to the YAML file
+    :return: dict, parsed YAML data
+    """
+    with open(filepath, 'r') as file:
+        return yaml.safe_load(file)
 
 
 # HELPER FUNCTIONS
