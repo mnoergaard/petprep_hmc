@@ -1,0 +1,53 @@
+package: petprep_hmc
+sections:
+- name: Motion Correction Reports
+  reportlets:
+  - bids:
+      desc: with_motion_correction
+      suffix: bold
+      extension: [.gif]
+    caption: |
+      PET scan with motion correction applied. This shows the stabilized sequence.
+    subtitle: PET with Motion Correction
+    style:
+      max-width: 600px
+
+  - bids:
+      desc: without_motion_correction
+      suffix: bold
+      extension: [.gif]
+    caption: |
+      Original PET scan without any motion correction. Notice the movements affecting the quality.
+    subtitle: PET without Motion Correction
+    style:
+      max-width: 600px
+
+  - bids:
+      desc: movement
+      suffix: bold
+      extension: [.png]
+    caption: |
+      Overall movement metrics over time.
+    subtitle: Movement Metrics
+    style:
+      max-width: 600px
+
+  - bids:
+      desc: rotation
+      suffix: bold
+      extension: [.png]
+    caption: |
+      Rotation components of motion correction.
+    subtitle: Rotation Metrics
+    style:
+      max-width: 600px
+
+  - bids:
+      desc: translation
+      suffix: bold
+      extension: [.png]
+    caption: |
+      Translation components of motion correction.
+    subtitle: Translation Metrics
+    style:
+      max-width: 600px
