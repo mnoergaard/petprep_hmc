@@ -109,7 +109,7 @@ def main(args):
             source_file = layout.get(suffix='pet', subject=sub_id, extension=['.nii', '.nii.gz'], return_type='filename')[0]
 
         # create html report
-        
+        display_motion_correction_html(file_prefix, sub_out_dir)
 
         hmc_json = {
             "Description": "Motion-corrected PET file",
