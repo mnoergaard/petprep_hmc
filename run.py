@@ -108,9 +108,6 @@ def main(args):
         elif ses_id is None and run_id is None:
             source_file = layout.get(suffix='pet', subject=sub_id, extension=['.nii', '.nii.gz'], return_type='filename')[0]
 
-        # create html report
-        display_motion_correction_html(file_prefix, sub_out_dir)
-
         hmc_json = {
             "Description": "Motion-corrected PET file",
             "Sources": source_file,
@@ -131,6 +128,9 @@ def main(args):
 
         # Plot with and without motion correction
         plot_mc_dynamic_pet(source_file, mc_files[idx], sub_out_dir, file_prefix)
+
+        # create html report
+        display_motion_correction_html(file_prefix, sub_out_dir)
 
     # Remove temp outputs
     shutil.rmtree(os.path.join(args.bids_dir, 'petprep_hmc_wf'))
