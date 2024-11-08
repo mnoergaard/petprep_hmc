@@ -87,6 +87,10 @@ docker run -it --rm \
 
 This command mounts your local input and output directories, as well as the FreeSurfer license file, to the Docker container. The petprep_hmc script is then executed within the container, processing the input data and saving the results to the specified output directory.
 
+<pre>
+singularity exec -e --bind license.txt:/opt/freesufer/license.txt docker://martinnoergaard/petprep_hmc:latest python3 /opt/petprep_hmc/run.py
+</pre
+
 ## Support
 
 For questions or bug reports, please open an issue on the GitHub repository.
