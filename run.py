@@ -14,6 +14,8 @@ import re
 import shutil
 import json
 from niworkflows.utils.misc import check_valid_fs_license
+from niworkflows.utils.bids import collect_data
+from niworkflows.utils.bids import collect_participants
 from petprep_hmc.utils import plot_mc_dynamic_pet
 from petprep_hmc.bids import collect_data
 import os.path as op
