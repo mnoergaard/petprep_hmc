@@ -93,7 +93,7 @@ def main(args):
     os.makedirs(output_dir, exist_ok=True)
 
     # Run workflow
-    main = init_petprep_hmc_wf(args)
+    main = init_petprep_hmc_wf(subjects)
     main.run(plugin='MultiProc', plugin_args={'n_procs': int(args.n_procs)})
 
     # Loop through directories and store according to PET-BIDS specification
@@ -189,19 +189,13 @@ def main(args):
         outfile.write(json_object)
 
 
-def init_petprep_hmc_wf(args: Union[dict, argparse.Namespace]) -> None:
-    from bids import BIDSLayout
-
-    layout = BIDSLayout(args.bids_dir, validate=False)
+def init_petprep_hmc_wf(subjects):
 
     petprep_hmc_wf = Workflow(name='petprep_hmc_wf', base_dir=args.bids_dir)
     petprep_hmc_wf.config['execution']['remove_unnecessary_outputs'] = 'false'
 
-    # Define the subjects to iterate over
-    subject_list = layout.get(return_type='id', target='subject', suffix='pet')
-
     # Set up the main workflow to iterate over subjects
-    for subject_id in subject_list:
+    for subject_id in subjects:
         # For each subject, create a subject-specific workflow
         subject_wf = init_single_subject_wf(subject_id)
         petprep_hmc_wf.add_nodes([subject_wf])
@@ -622,6 +616,14 @@ if __name__ == '__main__':
                         'provided all subjects should be analyzed. Multiple '
                         'participants can be specified with a space separated list.',
                         nargs="+", default=None)
+    parser.add_argument(
+        "--participant_label_exclude",
+        help="Exclude a subject(s) from the defacing workflow. e.g. --participant_label_exclude sub-01 sub-02",
+        type=str,
+        nargs="+",
+        required=False,
+        default=[],
+    )
     parser.add_argument('--mc_start_time', help='Start time for when to perform motion correction (subsequent frame will be chosen) in seconds', default=120)
     parser.add_argument('--mc_fwhm', help='FWHM for smoothing of frames prior to estimating motion', default=10)
     parser.add_argument('--mc_thresh', help='Threshold below the following percentage (0-100) of framewise ROBUST RANGE prior to estimating motion correction', default=20)
