@@ -13,6 +13,7 @@ import glob
 import re
 import shutil
 import json
+from typing import Union
 from niworkflows.utils.misc import check_valid_fs_license
 from niworkflows.utils.bids import collect_data
 from niworkflows.utils.bids import collect_participants
@@ -154,7 +155,7 @@ def main(args):
         outfile.write(json_object)
 
 
-def init_petprep_hmc_wf():
+def init_petprep_hmc_wf(args: Union[dict, argparse.Namespace]) -> None:
     from bids import BIDSLayout
 
     layout = BIDSLayout(args.bids_dir, validate=False)
