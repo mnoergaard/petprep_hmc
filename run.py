@@ -47,8 +47,42 @@ def main(args):
         raise Exception('FSL is not installed or sourced')
 
     # Get all PET files
-    if args.participant_label is None:
-        args.participant_label = layout.get(suffix='pet', target='subject', return_type='id')
+    if args.participant_label:
+        subjects = args.participant_label
+        # if participant label contains the string sub-, remove it to avoid redundancy as pybids will add it uses the
+        # right side of the sub- string as the subject label
+        if any("sub-" in subject for subject in subjects):
+            print("One or more subject contains sub- string")
+        subjects = [
+            subject.replace("sub-", "") for subject in subjects if "sub-" in subject
+        ]
+        # raise error if a supplied subject is not contained in the dataset
+        participants = collect_participants(
+            args.bids_dir, bids_validate=~args.skip_bids_validator
+        )
+        for subject in subjects:
+            if subject not in participants:
+                raise FileNotFoundError(
+                    f"sub-{subject} not found in dataset {args.bids_dir}"
+                )
+    else:
+        subjects = collect_participants(
+            args.bids_dir, bids_validate=~args.skip_bids_validator
+        )
+
+    # check to see if any subjects are excluded from the defacing workflow
+    if args.participant_label_exclude != []:
+        print(
+            f"Removing the following subjects {args.participant_label_exclude} from the defacing workflow"
+        )
+        args.participant_label_exclude = [
+            subject.replace("sub-", "") for subject in args.participant_label_exclude
+        ]
+        subjects = [
+            subject for subject in subjects if subject not in args.participant_label_exclude
+        ]
+
+        print(f"Subjects remaining in the defacing workflow: {subjects}")
 
     # Create derivatives directories
     if args.output_dir is None:
@@ -59,7 +93,7 @@ def main(args):
     os.makedirs(output_dir, exist_ok=True)
 
     # Run workflow
-    main = init_petprep_hmc_wf()
+    main = init_petprep_hmc_wf(args)
     main.run(plugin='MultiProc', plugin_args={'n_procs': int(args.n_procs)})
 
     # Loop through directories and store according to PET-BIDS specification
