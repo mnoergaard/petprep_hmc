@@ -44,8 +44,12 @@ def main(args):
         raise Exception('FSL is not installed or sourced')
 
     # Get all PET files
-    if args.participant_label is None:
+    if not args.participant_label or args.participant_label == []:
         args.participant_label = layout.get(suffix='pet', target='subject', return_type='id')
+    for sub in args.participant_label:
+        if sub not in layout.get(suffix='pet', target='subject', return_type='id'):
+            print(f"No valid PET files found for subject {sub}. Exiting.")
+            sys.exit(1)
 
     # Create derivatives directories
     if args.output_dir is None:
@@ -56,7 +60,7 @@ def main(args):
     os.makedirs(output_dir, exist_ok=True)
 
     # Run workflow
-    main = init_petprep_hmc_wf()
+    main = init_petprep_hmc_wf(subject_list = args.participant_label)
     main.run(plugin='MultiProc', plugin_args={'n_procs': int(args.n_procs)})
 
     # Loop through directories and store according to PET-BIDS specification
@@ -152,7 +156,7 @@ def main(args):
         outfile.write(json_object)
 
 
-def init_petprep_hmc_wf():
+def init_petprep_hmc_wf(subject_list: list = []):
     from bids import BIDSLayout
 
     layout = BIDSLayout(args.bids_dir, validate=False)
@@ -160,8 +164,11 @@ def init_petprep_hmc_wf():
     petprep_hmc_wf = Workflow(name='petprep_hmc_wf', base_dir=args.bids_dir)
     petprep_hmc_wf.config['execution']['remove_unnecessary_outputs'] = 'false'
 
-    # Define the subjects to iterate over
-    subject_list = layout.get(return_type='id', target='subject', suffix='pet')
+    if subject_list == [] or not subject_list: 
+        # Define the subjects to iterate over
+        subject_list = layout.get(return_type='id', target='subject', suffix='pet')
+    else:
+        subject_list = subject_list
 
     # Set up the main workflow to iterate over subjects
     for subject_id in subject_list:
