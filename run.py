@@ -70,10 +70,10 @@ def main(args):
             args.bids_dir, bids_validate=~args.skip_bids_validator
         )
 
-    # check to see if any subjects are excluded from the defacing workflow
+    # check to see if any subjects are excluded from the HMC workflow
     if args.participant_label_exclude != []:
         print(
-            f"Removing the following subjects {args.participant_label_exclude} from the defacing workflow"
+            f"Removing the following subjects {args.participant_label_exclude} from the HMC workflow"
         )
         args.participant_label_exclude = [
             subject.replace("sub-", "") for subject in args.participant_label_exclude
@@ -82,7 +82,7 @@ def main(args):
             subject for subject in subjects if subject not in args.participant_label_exclude
         ]
 
-        print(f"Subjects remaining in the defacing workflow: {subjects}")
+        print(f"Subjects remaining in the HMC workflow: {subjects}")
 
     # Create derivatives directories
     if args.output_dir is None:
