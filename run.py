@@ -13,7 +13,10 @@ import glob
 import re
 import shutil
 import json
+from typing import Union
 from niworkflows.utils.misc import check_valid_fs_license
+from niworkflows.utils.bids import collect_data
+from niworkflows.utils.bids import collect_participants
 from petprep_hmc.utils import plot_mc_dynamic_pet
 from petprep_hmc.bids import collect_data
 import os.path as op
@@ -44,8 +47,42 @@ def main(args):
         raise Exception('FSL is not installed or sourced')
 
     # Get all PET files
-    if args.participant_label is None:
-        args.participant_label = layout.get(suffix='pet', target='subject', return_type='id')
+    if args.participant_label:
+        subjects = args.participant_label
+        # if participant label contains the string sub-, remove it to avoid redundancy as pybids will add it uses the
+        # right side of the sub- string as the subject label
+        if any("sub-" in subject for subject in subjects):
+            print("One or more subject contains sub- string")
+        subjects = [
+            subject.replace("sub-", "") for subject in subjects if "sub-" in subject
+        ]
+        # raise error if a supplied subject is not contained in the dataset
+        participants = collect_participants(
+            args.bids_dir, bids_validate=~args.skip_bids_validator
+        )
+        for subject in subjects:
+            if subject not in participants:
+                raise FileNotFoundError(
+                    f"sub-{subject} not found in dataset {args.bids_dir}"
+                )
+    else:
+        subjects = collect_participants(
+            args.bids_dir, bids_validate=~args.skip_bids_validator
+        )
+
+    # check to see if any subjects are excluded from the HMC workflow
+    if args.participant_label_exclude != []:
+        print(
+            f"Removing the following subjects {args.participant_label_exclude} from the HMC workflow"
+        )
+        args.participant_label_exclude = [
+            subject.replace("sub-", "") for subject in args.participant_label_exclude
+        ]
+        subjects = [
+            subject for subject in subjects if subject not in args.participant_label_exclude
+        ]
+
+        print(f"Subjects remaining in the HMC workflow: {subjects}")
 
     # Create derivatives directories
     if args.output_dir is None:
@@ -56,7 +93,7 @@ def main(args):
     os.makedirs(output_dir, exist_ok=True)
 
     # Run workflow
-    main = init_petprep_hmc_wf()
+    main = init_petprep_hmc_wf(subjects)
     main.run(plugin='MultiProc', plugin_args={'n_procs': int(args.n_procs)})
 
     # Loop through directories and store according to PET-BIDS specification
@@ -152,19 +189,13 @@ def main(args):
         outfile.write(json_object)
 
 
-def init_petprep_hmc_wf():
-    from bids import BIDSLayout
-
-    layout = BIDSLayout(args.bids_dir, validate=False)
+def init_petprep_hmc_wf(subjects):
 
     petprep_hmc_wf = Workflow(name='petprep_hmc_wf', base_dir=args.bids_dir)
     petprep_hmc_wf.config['execution']['remove_unnecessary_outputs'] = 'false'
 
-    # Define the subjects to iterate over
-    subject_list = layout.get(return_type='id', target='subject', suffix='pet')
-
     # Set up the main workflow to iterate over subjects
-    for subject_id in subject_list:
+    for subject_id in subjects:
         # For each subject, create a subject-specific workflow
         subject_wf = init_single_subject_wf(subject_id)
         petprep_hmc_wf.add_nodes([subject_wf])
@@ -585,6 +616,14 @@ if __name__ == '__main__':
                         'provided all subjects should be analyzed. Multiple '
                         'participants can be specified with a space separated list.',
                         nargs="+", default=None)
+    parser.add_argument(
+        "--participant_label_exclude",
+        help="Exclude a subject(s) from the defacing workflow. e.g. --participant_label_exclude sub-01 sub-02",
+        type=str,
+        nargs="+",
+        required=False,
+        default=[],
+    )
     parser.add_argument('--mc_start_time', help='Start time for when to perform motion correction (subsequent frame will be chosen) in seconds', default=120)
     parser.add_argument('--mc_fwhm', help='FWHM for smoothing of frames prior to estimating motion', default=10)
     parser.add_argument('--mc_thresh', help='Threshold below the following percentage (0-100) of framewise ROBUST RANGE prior to estimating motion correction', default=20)

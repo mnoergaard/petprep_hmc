@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="petprep_hmc",
-    version="0.0.8",
+    version="0.0.9",
     description='PETPrep Head Motion Correction Workflow',
     author='Martin Norgaard',
     author_email='martin.noergaard@di.ku.dk',
@@ -34,7 +34,7 @@ setup(
         "pybids==0.15.6",
         "sqlalchemy==1.3.24",
         "wrapt==1.15.0",
-        "niworkflows==1.7.9",
+        "niworkflows==1.11.0",
     ],
     extras_require={
         "dev": [

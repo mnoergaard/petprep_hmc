@@ -45,7 +45,8 @@ To run the PETPrep Head Motion Correction BIDS App, use the following command:
 - `--bids_dir`: Path to the input BIDS dataset
 - `--output_dir`: Path to the output directory for preprocessed data
 - `--analysis_level`: Level of the analysis that will be performed. Multiple participant level analyses can be run independently (in parallel) using the same output_dir.
-- `--participant_label`: (Optional) A single participant label or a space-separated list of participant labels to process. If not provided, all participants in the dataset will be processed.
+- `--participant_label`: (Optional) A single participant label or a space-separated list of participant labels to process (e.g. sub-01 sub02). If not provided, all participants in the dataset will be processed.
+- `--participant_label_exclude`: (Optional) A single participant label or a space-separated list of participant labels to exclude in the processing (e.g. sub-01 sub02). If not provided, all participants in the dataset will be processed.
 - `--mc_start_time`: (Optional) Start time for when to perform motion correction (subsequent frame will be chosen) in seconds (default = 120 seconds).
 - `--mc_fwhm`: (Optional) FWHM for smoothing of frames prior to estimating motion (default = 10mm).
 - `--mc_thresh`: (Optional) Threshold below the following percentage (0-100) of framewise ROBUST RANGE prior to estimating motion correction (default = 20).
