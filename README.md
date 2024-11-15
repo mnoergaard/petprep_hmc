@@ -56,7 +56,7 @@ To run the PETPrep Head Motion Correction BIDS App, use the following command:
 
 For example, to process participant `sub-01`, use the following command:
 
-`python3 run.py --bids_dir /data/bids_input --output_dir /data/bids_output --participant_label 01`
+`python3 run.py --bids_dir /data/bids_input --output_dir /data/bids_output --participant_label sub-01`
 
 ## Outputs
 
