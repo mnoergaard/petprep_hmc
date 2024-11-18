@@ -86,7 +86,7 @@ docker run -it --rm \
     -v /path/to/bids_output:/data/output \
     -v /path/to/freesurfer_license:/opt/freesurfer/license.txt \
     martinnoergaard/petprep_hmc:latest \
-    --bids_dir /data/input --output_dir /data/output --analysis_level participant [--participant_label PARTICIPANT_LABEL]
+    /data/input /data/output participant [--participant_label PARTICIPANT_LABEL]
 </pre>
 
 This command mounts your local input and output directories, as well as the FreeSurfer license file, to the Docker container. The petprep_hmc script is then executed within the container, processing the input data and saving the results to the specified output directory.
