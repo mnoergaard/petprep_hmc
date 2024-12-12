@@ -1,3 +1,14 @@
+
+
+.PHONY: docs
+docs:
+	sphinx-build -b html docs docs/_build/html
+
+.PHONY: docs-serve
+docs-serve:
+	sphinx-autobuild docs docs/_build/html
+
+
 # Quickly run black on all python files in this repository, local version of the pre-commit hook
 black:
 	@for file in `find . -name "*.py"`; do \
@@ -17,3 +28,7 @@ dockerbuild:
 dockerpush: dockerbuild
 	docker push martinnoergaard/petprep_hmc:$(shell cat version)
 	docker push martinnoergaard/petprep_hmc:latest
+
+# exists solely to escape chars on zsh shell on mac
+installdev:
+	pip install --upgrade pip && pip install -e .\[dev\]
