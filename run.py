@@ -823,13 +823,13 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--session_label",
-        help="Limit petprep_hmc to only a specific session(s). Multiple sessions can be specified seperated the space character.",
+        help="Limit petprep_hmc to only a specific session(s). Multiple sessions can be specified separated the space character.",
         nargs="+",
         default=[],
     )
     parser.add_argument(
         "--session_label_exclude",
-        help="Exclude a session(s) from the petprep_hmc workflow. Multiple sessions can be specified seperated the space character.",
+        help="Exclude a session(s) from the petprep_hmc workflow. Multiple sessions can be specified separated the space character.",
         nargs="+",
         default=[],
     )
