@@ -84,6 +84,18 @@ def main(args):
 
         print(f"Subjects remaining in the HMC workflow: {subjects}")
 
+    # collect list of all sessions
+    all_sessions = layout.get_sessions()
+    # check to see if any sessions are excluded from the HMC workflow
+    if args.session_label:
+        if any('ses-' in session for session in args.session_label):
+            print("One or more session contains ses- string")
+            args.session_label = [session.replace("ses-", "") for session in args.session_label]
+        sessions_to_exclude = set(layout.get(return_type='id', target='session')) - (set(layout.get(return_type='id', target='session')) & set(args.session_label)) | set(args.session_label_exclude)
+    else:
+        sessions_to_exclude = args.session_label_exclude
+
+
     # Create derivatives directories
     if args.output_dir is None:
         output_dir = os.path.join(args.bids_dir, 'derivatives', 'petprep_hmc')
@@ -93,7 +105,7 @@ def main(args):
     os.makedirs(output_dir, exist_ok=True)
 
     # Run workflow
-    main = init_petprep_hmc_wf(subjects)
+    main = init_petprep_hmc_wf(subjects, sessions_to_exclude)
     main.run(plugin='MultiProc', plugin_args={'n_procs': int(args.n_procs)})
 
     # Loop through directories and store according to PET-BIDS specification
@@ -189,7 +201,7 @@ def main(args):
         outfile.write(json_object)
 
 
-def init_petprep_hmc_wf(subjects):
+def init_petprep_hmc_wf(subjects, sessions_to_exclude=[]):
 
     petprep_hmc_wf = Workflow(name='petprep_hmc_wf', base_dir=args.bids_dir)
     petprep_hmc_wf.config['execution']['remove_unnecessary_outputs'] = 'false'
@@ -197,13 +209,13 @@ def init_petprep_hmc_wf(subjects):
     # Set up the main workflow to iterate over subjects
     for subject_id in subjects:
         # For each subject, create a subject-specific workflow
-        subject_wf = init_single_subject_wf(subject_id)
+        subject_wf = init_single_subject_wf(subject_id, sessions_to_exclude=sessions_to_exclude)
         petprep_hmc_wf.add_nodes([subject_wf])
 
     return petprep_hmc_wf
 
 
-def init_single_subject_wf(subject_id):
+def init_single_subject_wf(subject_id, sessions_to_exclude=[]):
     from bids import BIDSLayout
 
     layout = BIDSLayout(args.bids_dir, validate=False)
@@ -213,7 +225,10 @@ def init_single_subject_wf(subject_id):
     subject_wf.config['execution']['remove_unnecessary_outputs'] = 'false'
 
     subject_data = collect_data(layout,
-                            participant_label=subject_id)[0]['pet']
+        participant_label=subject_id)[0]['pet']
+    
+    if sessions_to_exclude:
+        subject_data = [data for data in subject_data if not any(f"ses-{session}" in data for session in sessions_to_exclude)]
 
     # This function will strip the extension(s) from a filename
     def strip_extensions(filename):
@@ -600,13 +615,13 @@ def check_fsl_installed():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='BIDS App for PETPrep head motion correction workflow')
-    parser.add_argument('--bids_dir', required=True,  help='The directory with the input dataset '
+    parser.add_argument('bids_dir',  help='The directory with the input dataset '
                         'formatted according to the BIDS standard.')
-    parser.add_argument('--output_dir', required=False, help='The directory where the output files '
+    parser.add_argument('output_dir', nargs="?", help='The directory where the output files '
                         'should be stored. If you are running group level analysis '
                         'this folder should be prepopulated with the results of the'
                         'participant level analysis.')
-    parser.add_argument('--analysis_level', default='participant', help='Level of the analysis that will be performed. '
+    parser.add_argument('analysis_level', default='participant', help='Level of the analysis that will be performed. '
                         'Multiple participant level analyses can be run independently '
                         '(in parallel) using the same output_dir.',
                         choices=['participant', 'group'])
@@ -624,6 +639,8 @@ if __name__ == '__main__':
         required=False,
         default=[],
     )
+    parser.add_argument('--session_label', help='Limit petprep_hmc to only a specific session(s). Multiple sessions can be specified seperated the space character.', nargs="+", default=[])
+    parser.add_argument('--session_label_exclude', help='Exclude a session(s) from the petprep_hmc workflow. Multiple sessions can be specified seperated the space character.', nargs="+", default=[])
     parser.add_argument('--mc_start_time', help='Start time for when to perform motion correction (subsequent frame will be chosen) in seconds', default=120)
     parser.add_argument('--mc_fwhm', help='FWHM for smoothing of frames prior to estimating motion', default=10)
     parser.add_argument('--mc_thresh', help='Threshold below the following percentage (0-100) of framewise ROBUST RANGE prior to estimating motion correction', default=20)
