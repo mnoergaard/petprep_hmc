@@ -25,15 +25,9 @@ jobs:
 
       - name: Codespell
         uses: codespell-project/actions-codespell@v2
-        with:
-            exclude_file: poetry.lock
-
-      - name: Install Poetry
-        run: |
-            curl -sSL https://install.python-poetry.org | python3 -
 
       - name: Install Dependencies # install extras requires too
-        run:  python3 -m pip install -e .[all]
+        run:  python3 -m pip install -e .[dev]
       
       - name: Lint files with Black
         run: make check-black

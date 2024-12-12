@@ -10,9 +10,12 @@ docs-serve:
 
 
 # Quickly run black on all python files in this repository, local version of the pre-commit hook
+# ignore virtual environment files
 black:
 	@for file in `find . -name "*.py"`; do \
-		black $$file; \
+		if [[ $$file == *"venv"* ]] && [[ $$file == *"rtdenv" ]]; then \
+			black $$file; \
+		fi; \
 	done
 
 # install python dependencies
