@@ -220,10 +220,10 @@ def collect_data(
         layout = BIDSLayout(str(bids_dir), validate=bids_validate)
 
     layout_get_kwargs = {
-        'return_type': 'file',
-        'subject': participant_label,
-        'extension': ['.nii', '.nii.gz'],
-        'session': session_id,
+        "return_type": "file",
+        "subject": participant_label,
+        "extension": [".nii", ".nii.gz"],
+        "session": session_id,
     }
 
     queries = {
@@ -234,7 +234,7 @@ def collect_data(
         "t2w": {"datatype": "anat", "suffix": "T2w", "part": ["mag", None]},
         "t1w": {"datatype": "anat", "suffix": "T1w", "part": ["mag", None]},
         "roi": {"datatype": "anat", "suffix": "roi"},
-        "pet": {"suffix": "pet"}
+        "pet": {"suffix": "pet"},
     }
     bids_filters = bids_filters or {}
     for acq, entities in bids_filters.items():
