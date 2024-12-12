@@ -18,6 +18,9 @@ black:
 		fi; \
 	done
 
+check-black:
+	black --check . --exclude="dist/*" --exclude="build/*" --exclude="docs/*";
+
 # install python dependencies
 pythondeps:
 	pip install --upgrade pip && pip install  -e .
