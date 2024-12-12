@@ -19,7 +19,7 @@ black:
 	done
 
 check-black:
-	black --check . --exclude="dist/*" --exclude="build/*" --exclude="docs/* --exclude="build/*";
+	black --check . --exclude="dist/*" --exclude="build/*" --exclude="docs/*" --exclude="build/*";
 
 # install python dependencies
 pythondeps:
