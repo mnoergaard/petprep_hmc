@@ -39,6 +39,9 @@ setup(
     extras_require={
         "dev": [
             "pytest",
+            "sphinx-autobuild",
+            "sphinx-rtd-theme",
+            "sphinx",
             # Add any other development/testing packages here
         ],
     },

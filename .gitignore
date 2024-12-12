@@ -1,0 +1,8 @@
+venv/
+# note the additional virtual environment for read the docs / sphinx
+# this exists solely because there is a bug that causes sphinx to crash
+# when serving the documentation in python3.9, hence we use any python above 3.9 for 
+# building and serving the documentation.
+rtdvenv/
+docs/_build/
+*__pycache__*

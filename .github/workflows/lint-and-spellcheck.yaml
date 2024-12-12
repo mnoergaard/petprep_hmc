@@ -1,0 +1,39 @@
+# Codespell configuration is within .codespellrc
+name: Lint and Spellcheck
+
+on:
+    push:
+      branches: 
+        - '**'
+    pull_request:
+      branches: [main]
+
+permissions:
+    contents: read
+
+jobs:
+  lintandspell:
+    name: Check for spelling and formatting errors
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Annotate locations with typos
+        uses: codespell-project/codespell-problem-matcher@v1
+
+      - name: Codespell
+        uses: codespell-project/actions-codespell@v2
+        with:
+            exclude_file: poetry.lock
+
+      - name: Install Poetry
+        run: |
+            curl -sSL https://install.python-poetry.org | python3 -
+
+      - name: Install Dependencies # install extras requires too
+        run:  python3 -m pip install -e .[all]
+      
+      - name: Lint files with Black
+        run: make check-black
