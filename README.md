@@ -1,6 +1,6 @@
 [![PyPI](https://img.shields.io/pypi/v/petprep-hmc)](https://pypi.org/project/petprep-hmc/0.0.8/) [![Docker Hub](https://img.shields.io/docker/automated/martinnoergaard/petprep_hmc)](https://hub.docker.com/r/martinnoergaard/petprep_hmc) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14168647.svg)](https://doi.org/10.5281/zenodo.14168647)
 
-![Read the Docs](https://readthedocs.org/projects/petprep_hmc/badge/?version=lastest)
+![Read the Docs](https://readthedocs.org/projects/petprep_hmc/badge/?version=latest)
 
 | CI  | Status |
 |---------| ------ |
