@@ -3,6 +3,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 
+
 def test_cli():
     repo_root = Path(__file__).parent.parent.resolve()
     bids_dir = repo_root / "data"

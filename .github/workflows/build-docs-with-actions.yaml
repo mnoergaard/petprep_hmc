@@ -37,7 +37,7 @@ jobs:
 
           - name: Install Dependencies
             run: |
-                python3 -m pip install -e .
+                python3 -m pip install -e .[dev]
 
           - name: Build Docs
             run: make docs
