@@ -13,7 +13,7 @@ def plot_mc_dynamic_pet(pet_orig, pet_mc, sub_out_dir, file_prefix):
     Creates a dynamic GIF of the PET images before and after motion correction,
     saves to sub_out_dir.
 
-    :param pet_orig: originial PET NifTi image
+    :param pet_orig: original PET NifTi image
     :type pet_orig: str
     :param pet_mc: motion corrected PET NifTi image
     :type pet_mc: str
