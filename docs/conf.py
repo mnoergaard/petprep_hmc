@@ -17,10 +17,17 @@ release = "0.0.9"
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
+    "myst_parser",
 ]
 
 templates_path = ["_templates"]
 exclude_patterns = []
+
+source_suffix = {
+    ".rst": "restructuredtext",
+    ".txt": "markdown",
+    ".md": "markdown",
+}
 
 
 # -- Options for HTML output -------------------------------------------------

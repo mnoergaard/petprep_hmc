@@ -29,17 +29,17 @@ This BIDS App provides a pipeline for preprocessing and head motion correction o
 
 Clone the repository and install the required packages:
 
-<pre>
+```bash
 git clone https://github.com/mnoergaard/petprep_hmc.git
 cd petprep_hmc
 pip install -e .
-</pre>
+```
 
 The package is also pip installable and can be installed using the following command
 
-<pre>
+```bash
 pip install petprep-hmc
-</pre>
+```
 
 ## Usage
 
@@ -78,27 +78,27 @@ To run petprep_hmc workflow using Docker, you must first have Docker installed o
 ### Pulling the Docker Image
 Once you have Docker installed, you can pull the petprep_hmc Docker image from Docker Hub by running the following command:
 
-<pre>
+```bash
 docker pull martinnoergaard/petprep_hmc:latest
-</pre>
+```
 
 ### Running the Docker Container
 To run the petprep_hmc Docker container, use the following command:
 
-<pre>
+```bash
 docker run -it --rm \
     -v /path/to/bids_input:/data/input \
     -v /path/to/bids_output:/data/output \
     -v /path/to/freesurfer_license:/opt/freesurfer/license.txt \
     martinnoergaard/petprep_hmc:latest \
     /data/input /data/output participant [--participant_label PARTICIPANT_LABEL]
-</pre>
+```
 
 This command mounts your local input and output directories, as well as the FreeSurfer license file, to the Docker container. The petprep_hmc script is then executed within the container, processing the input data and saving the results to the specified output directory.
 
-<pre>
+```bash
 singularity exec -e --bind license.txt:/opt/freesufer/license.txt docker://martinnoergaard/petprep_hmc:latest python3 /opt/petprep_hmc/run.py
-</pre
+```
 
 ## Support
 
