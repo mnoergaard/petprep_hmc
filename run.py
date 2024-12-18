@@ -544,8 +544,11 @@ def display_motion_correction_html(file_prefix, sub_out_dir):
 def load_config(filepath):
     """
     Load a YAML configuration file.
-    :param filepath: str, path to the YAML file
-    :return: dict, parsed YAML data
+
+    :param filepath: path to yaml file
+    :type filepath: str
+    :return: parsed YAML data
+    :rtype: dict
     """
     with open(filepath, "r") as file:
         return yaml.safe_load(file)
@@ -589,12 +592,10 @@ def add_mc_ext(in_file):
     """
     Function to add the mc extension to the list of file names.
 
-
-    :param in_file : file name to be updated
-    :type in_file : list of file names
-
-    : return mc_list : list of updated file names with mc extension
-    : rtype mc_list : list
+    :param in_file: file name to be updated
+    :type in_file: list
+    :return: list of updated file names with mc extension
+    :rtype: list
     """
 
     if len(in_file) > 1:
@@ -608,10 +609,10 @@ def lta2mat(in_file):
     """
     Function to convert the lta file to the fsl format (.mat).
 
-    :param in_file : list of lta files to be converted
-    :type in_file : list
-    :return mat_list : list of mat files
-    :rtype mat_list : list
+    :param in_file: list of lta files to be converted
+    :type in_file: list
+    :return: list of mat files
+    :rtype: list
     """
 
     mat_list = [ext.replace(".lta", ".mat") for ext in in_file]
@@ -645,10 +646,10 @@ def combine_hmc_outputs(translations, rot_angles, rotation_translation_matrix, i
     """
     Function to combine the outputs of the hmc workflow.
 
-    :parameter translations : list of estimated translations across frames
-    :parameter rot_angles : list of estimated rotational angles across frames
-    :parameter rotation_translation_matrix : list of estimated rotation translation matrices across frames
-    :parameter in_file : list of frames to be used in the hmc workflow
+    :parameter translations: list of estimated translations across frames
+    :parameter rot_angles: list of estimated rotational angles across frames
+    :parameter rotation_translation_matrix: list of estimated rotation translation matrices across frames
+    :parameter in_file: list of frames to be used in the hmc workflow
 
     :return: Output path to confounds file for head motion correction
     :rtype: str
@@ -714,11 +715,11 @@ def plot_motion_outputs(in_file):
     """
     Function to plot estimated motion data
 
-    :in_file : list of estimated motion data
-    :type in_file : list
+    :in_file: list of estimated motion data
+    :type in_file: list
 
-    :return : Plots of estimated motion data
-    :rtype : png
+    :return: Plots of estimated motion data
+    :rtype: png
     """
 
     import os
