@@ -579,7 +579,7 @@ def update_list_transforms(in_file, min_frame):
     :return: List of updated transforms to be used in the HMC workflow.
     :rtype: list
     """
-    
+
     new_list = [in_file[min_frame]] * min_frame + in_file[min_frame:]
     lta_list = [ext.replace("nii.gz", "lta") for ext in new_list]
     return lta_list

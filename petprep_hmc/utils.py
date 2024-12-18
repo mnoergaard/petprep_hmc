@@ -19,7 +19,7 @@ def plot_mc_dynamic_pet(pet_orig, pet_mc, sub_out_dir, file_prefix):
     :type pet_mc: str
     :param sub_out_dir: path to output directory, typically located in derivatives/petprep_hmc/sub-*
     :type sub_out_dir: str
-    :param file_prefix: result of regex match on r"_pet_file_(.*?)_pet" 
+    :param file_prefix: result of regex match on r"_pet_file_(.*?)_pet"
     :type file_prefix: str
     """
     nib_orig = nib.load(pet_orig)
