@@ -9,6 +9,19 @@ import os
 
 
 def plot_mc_dynamic_pet(pet_orig, pet_mc, sub_out_dir, file_prefix):
+    """
+    Creates a dynamic GIF of the PET images before and after motion correction,
+    saves to sub_out_dir.
+
+    :param pet_orig: original PET NifTi image
+    :type pet_orig: str
+    :param pet_mc: motion corrected PET NifTi image
+    :type pet_mc: str
+    :param sub_out_dir: path to output directory, typically located in derivatives/petprep_hmc/sub-*
+    :type sub_out_dir: str
+    :param file_prefix: result of regex match on r"_pet_file_(.*?)_pet"
+    :type file_prefix: str
+    """
     nib_orig = nib.load(pet_orig)
     nib_mc = nib.load(pet_mc)
     shape_orig = nib_orig.shape

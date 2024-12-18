@@ -30,6 +30,23 @@ __version__ = open(
 
 
 def main(args):
+    """
+    Main function to run the PETPrep HMC workflow.
+
+    - Checks whether BIDS directory exists and instantiates BIDSLayout.
+    - Checks whether FreeSurfer license is valid.
+    - Checks whether FSL is installed.
+    - Gets all PET files.
+    - Checks to see if any subjects are excluded from the HMC workflow.
+    - Collects list of all sessions.
+    - Checks to see if any sessions are excluded from the HMC workflow.
+    - Creates derivatives directories.
+    - Runs workflow.
+    - Loops through directories and stores according to PET-BIDS specification.
+    - Plots with and without motion correction.
+    - Creates HTML report.
+    - Removes temp outputs.
+    """
     # Check whether BIDS directory exists and instantiate BIDSLayout
     if os.path.exists(args.bids_dir):
         if not args.skip_bids_validator:
@@ -482,7 +499,8 @@ def init_single_subject_wf(subject_id, sessions_to_exclude=[]):
 
 def display_motion_correction_html(file_prefix, sub_out_dir):
     """
-    Load and display motion correction figures based on config settings.
+    Load and display motion correction figures based on config settings. Then creates an HTML report
+    at sub_out_dir as {file_prefix}_report.html
     """
 
     report_config_path = op.join(
@@ -536,17 +554,14 @@ def load_config(filepath):
 # HELPER FUNCTIONS
 def update_list_frames(in_file, min_frame):
     """
-    Function to update the list of frames to be used in the hmc workflow.
+    Update the list of frames to be used in the HMC workflow.
 
-    Parameters
-    ----------
-    in_file : list of frames
-    min_frame : minimum frame to use for the analysis (first frame after 2 min)
-
-    Returns
-    -------
-    new_list : list of updated frames to be used in the hmc workflow
-
+    :param in_file: list of frames
+    :type in_file: list
+    :param min_frame: minimum frame to use for the analysis (first frame after 2 min)
+    :type min_frame: int
+    :return: list of updated frames to be used in the HMC workflow
+    :rtype: list
     """
 
     new_list = [in_file[min_frame]] * min_frame + in_file[min_frame:]
@@ -555,16 +570,14 @@ def update_list_frames(in_file, min_frame):
 
 def update_list_transforms(in_file, min_frame):
     """
-    Function to update the list of transforms to be used in the hmc workflow.
+    Update the list of transforms to be used in the HMC workflow.
 
-    Parameters
-    ----------
-    in_file : list of transforms
-    min_frame : minimum frame to use for the analysis (first frame after 2 min)
-
-    Returns
-    -------
-    lta_list : list of updated transforms to be used in the hmc workflow
+    :param in_file: List of transforms.
+    :type in_file: list
+    :param min_frame: Minimum frame to use for the analysis (first frame after 2 min).
+    :type min_frame: int
+    :return: List of updated transforms to be used in the HMC workflow.
+    :rtype: list
     """
 
     new_list = [in_file[min_frame]] * min_frame + in_file[min_frame:]
@@ -576,13 +589,12 @@ def add_mc_ext(in_file):
     """
     Function to add the mc extension to the list of file names.
 
-    Parameters
-    ----------
-    in_file : file name to be updated
 
-    Returns
-    -------
-    mc_list : list of updated file names with mc extension
+    :param in_file : file name to be updated
+    :type in_file : list of file names
+
+    : return mc_list : list of updated file names with mc extension
+    : rtype mc_list : list
     """
 
     if len(in_file) > 1:
@@ -596,13 +608,10 @@ def lta2mat(in_file):
     """
     Function to convert the lta file to the fsl format (.mat).
 
-    Parameters
-    ----------
-    in_file : list of lta files to be converted
-
-    Returns
-    -------
-    mat_list : list of mat files
+    :param in_file : list of lta files to be converted
+    :type in_file : list
+    :return mat_list : list of mat files
+    :rtype mat_list : list
     """
 
     mat_list = [ext.replace(".lta", ".mat") for ext in in_file]
@@ -613,13 +622,10 @@ def get_min_frame(json_file, mc_start_time):
     """
     Function to extract the frame number after mc_start_time (default=120) seconds of mid frames of dynamic PET data to be used with motion correction
 
-    Parameters
-    ----------
-    json_file : json file containing the frame length and duration of the dynamic PET data
+    :param json_file : json file containing the frame length and duration of the dynamic PET data
+    :type json_file : str
 
-    Returns
-    -------
-    min_frame : minimum frame to use for the motion correction (first frame after 2 min)
+    :return min_frame : minimum frame to use for the motion correction (first frame after 2 min)
     """
 
     import numpy as np
@@ -639,16 +645,13 @@ def combine_hmc_outputs(translations, rot_angles, rotation_translation_matrix, i
     """
     Function to combine the outputs of the hmc workflow.
 
-    Parameters
-    ----------
-    translations : list of estimated translations across frames
-    rot_angles : list of estimated rotational angles across frames
-    rotation_translation_matrix : list of estimated rotation translation matrices across frames
-    in_file : list of frames to be used in the hmc workflow
+    :parameter translations : list of estimated translations across frames
+    :parameter rot_angles : list of estimated rotational angles across frames
+    :parameter rotation_translation_matrix : list of estimated rotation translation matrices across frames
+    :parameter in_file : list of frames to be used in the hmc workflow
 
-    Returns
-    -------
-    Output path to confounds file for head motion correction
+    :return: Output path to confounds file for head motion correction
+    :rtype: str
     """
 
     import os
@@ -711,13 +714,11 @@ def plot_motion_outputs(in_file):
     """
     Function to plot estimated motion data
 
-    Parameters
-    ----------
-    in_file : list of estimated motion data
+    :in_file : list of estimated motion data
+    :type in_file : list
 
-    Returns
-    -------
-    Plots of estimated motion data
+    :return : Plots of estimated motion data
+    :rtype : png
     """
 
     import os

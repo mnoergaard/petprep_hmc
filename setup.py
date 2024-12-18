@@ -42,6 +42,7 @@ setup(
             "sphinx-autobuild",
             "sphinx-rtd-theme",
             "sphinx",
+            "myst-parser",
             "black",
             # Add any other development/testing packages here
         ],
