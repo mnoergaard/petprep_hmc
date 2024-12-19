@@ -5,6 +5,7 @@
 | CI  | Status |
 |---------| ------ |
 | `docker build` | ![Docker Build](https://codebuild.us-east-1.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiSlFmZFpmNVZRbXFXc1ZLMXZVRnpnVVdvVVZucEZ5cS9ib0JyOGhLNTJsRWtROU12Y0hUUUlRaXBwd0ZDbTR2MGJzeGZFYmJNdlRqdndMRVRQWFZzQ2M4PSIsIml2UGFyYW1ldGVyU3BlYyI6IkVzMzhLTlFBelNrMXl6Tm4iLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=main) |
+| `docker run` | ![Docker Run](https://codebuild.us-east-1.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiOEYxenJydy8wQWJrUDFQU3dZWGlkRjhMbW16OHl0RWs4VlF6R0NtR0FLZGZHQkw3emEzRGxzMkg4SkJ2T2lZKzQ0Zk9PblZUeFIvSmNZWHlLTEtVU29zPSIsIml2UGFyYW1ldGVyU3BlYyI6IjgwSzVpTDY0NmltcGd3MU8iLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=main) |
 
 # PETPrep Head Motion Correction workflow (BIDS App)
 This BIDS App provides a pipeline for preprocessing and head motion correction of Positron Emission Tomography (PET) data following the Brain Imaging Data Structure (BIDS) standard.
