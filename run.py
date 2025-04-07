@@ -525,7 +525,7 @@ def display_motion_correction_html(file_prefix, sub_out_dir):
             caption = f"<p>{reportlet.get('caption', '')}</p>"
 
             # Generate HTML image tag or use plotly for GIFs if needed
-            img_tag = f"<img src='{file_path}' style='width:100%; max-width:{reportlet['style']['max-width']}'>"
+            img_tag = f"<img src='{file_name}' style='width:100%; max-width:{reportlet['style']['max-width']}'>"
 
             # Combine elements
             html_content += title + caption + img_tag + "<br>"
