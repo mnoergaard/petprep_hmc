@@ -101,6 +101,9 @@ This command mounts your local input and output directories, as well as the Free
 singularity exec -e --bind license.txt:/opt/freesufer/license.txt docker://martinnoergaard/petprep_hmc:latest python3 /opt/petprep_hmc/run.py
 ```
 
+## Boilerplate for publications
+
+
 ## Support
 
 For questions or bug reports, please open an issue on the GitHub repository.
