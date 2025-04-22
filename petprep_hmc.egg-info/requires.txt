@@ -27,3 +27,8 @@ niworkflows==1.11.0
 
 [dev]
 pytest
+sphinx-autobuild
+sphinx-rtd-theme
+sphinx
+myst-parser
+black

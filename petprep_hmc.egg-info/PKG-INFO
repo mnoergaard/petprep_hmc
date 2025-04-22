@@ -1,6 +1,6 @@
-Metadata-Version: 2.1
+Metadata-Version: 2.4
 Name: petprep_hmc
-Version: 0.0.9
+Version: 0.0.10
 Summary: PETPrep Head Motion Correction Workflow
 Home-page: https://github.com/mnoergaard/petprep_hmc
 Author: Martin Norgaard
@@ -42,3 +42,16 @@ Requires-Dist: wrapt==1.15.0
 Requires-Dist: niworkflows==1.11.0
 Provides-Extra: dev
 Requires-Dist: pytest; extra == "dev"
+Requires-Dist: sphinx-autobuild; extra == "dev"
+Requires-Dist: sphinx-rtd-theme; extra == "dev"
+Requires-Dist: sphinx; extra == "dev"
+Requires-Dist: myst-parser; extra == "dev"
+Requires-Dist: black; extra == "dev"
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: home-page
+Dynamic: license-file
+Dynamic: provides-extra
+Dynamic: requires-dist
+Dynamic: summary
