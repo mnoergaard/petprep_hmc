@@ -101,6 +101,22 @@ This command mounts your local input and output directories, as well as the Free
 singularity exec -e --bind license.txt:/opt/freesufer/license.txt docker://martinnoergaard/petprep_hmc:latest python3 /opt/petprep_hmc/run.py
 ```
 
+## Boilerplate for publications
+Motion correction of the dynamic PET data was performed using PETPrep HMC (petprep_hmc version X.X.X, https://github.com/mnoergaard/petprep_hmc; Nørgaard et al., 20XX), a Nipype-based BIDS App (Gorgolewski et al., 2017).
+The head motion was estimated using a frame-based robust registration approach to an unbiased mean volume implemented in FreeSurfer's mri_robust_register (Reuter et al., 2010), combined with preprocessing steps using tools from FSL (Jenkinson et al., 2012). Specifically, for the estimation of head motion, each frame was initially smoothed with a Gaussian filter (full-width half-maximum [FWHM] = 10 mm), followed by thresholding at 20% of the intensity range to reduce noise and improve registration accuracy (removing stripe artefacts from filtered back projection reconstructions). Motion was estimated selectively of frames acquired after 120 seconds post-injection of the tracer, as frames before this often contain low count statistics. Frames preceding 120 seconds were corrected using identical transformations as derived for the first frame after 120 seconds. The robust registration (mri_robust_register) algorithm utilized settings optimized for PET data: intensity scaling was enabled, automated sensitivity detection was activated, and the Frobenius norm threshold for convergence was set at 0.0001, ensuring precise and consistent alignment across frames. After head motion estimation, the obtained transforms were applied to the original data and resampled, providing the final motion corrected output data.
+
+Visual quality control outputs, including plots illustrating translational and rotational motion parameters, and framewise displacement, were generated to assess correction quality and ensure robustness of the registration procedure.
+
+References:
+
+Nørgaard et al., 20XX. PETPrep HMC: Head Motion Correction Workflow for Dynamic PET Data. Zenodo. https://doi.org/XXXX (Replace with actual DOI upon availability).
+
+Gorgolewski, K.J. et al., 2017. The Brain Imaging Data Structure: A standard for organizing and describing outputs of neuroimaging experiments. Scientific Data, 3, 160044. https://doi.org/10.1038/sdata.2016.44
+
+Reuter, M. et al., 2010. Highly accurate inverse consistent registration: A robust approach. NeuroImage, 53(4), 1181–1196. https://doi.org/10.1016/j.neuroimage.2010.09.016
+
+Jenkinson, M. et al., 2012. FSL. NeuroImage, 62(2), 782–790. https://doi.org/10.1016/j.neuroimage.2011.09.015
+
 ## Support
 
 For questions or bug reports, please open an issue on the GitHub repository.
