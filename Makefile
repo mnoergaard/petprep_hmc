@@ -25,7 +25,7 @@ check-black:
 pythondeps:
 	pip install --upgrade pip && pip install  -e .
 
-# create petprep_hmc docker image with tag (petdeface:X.X.X)
+# create petprep_hmc docker image with tag (petprep_hmc:X.X.X)
 USE_LOCAL_FREESURFER ?= False
 dockerbuild:
 	docker build --build-arg="USE_LOCAL_FREESURFER=$(USE_LOCAL_FREESURFER)" -t martinnoergaard/petprep_hmc:$(shell cat version) .
