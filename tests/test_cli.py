@@ -22,5 +22,8 @@ def test_cli():
         with open(json_files[0]) as jf:
             data = json.load(jf)
             assert 'FrameDuration' in data
+            # check that metadata from source JSON is retained
+            assert 'Manufacturer' in data
+            # ensure QC report path stored and file exists
             assert 'QC' in data
             assert os.path.exists(data['QC'])
