@@ -791,7 +791,9 @@ def run_group_level(args):
     else:
         derivatives_dir = args.output_dir
 
-    pattern = os.path.join(derivatives_dir, "sub-*", "**", "*_desc-confounds_timeseries.tsv")
+    pattern = os.path.join(
+        derivatives_dir, "sub-*", "**", "*_desc-confounds_timeseries.tsv"
+    )
     confound_files = glob.glob(pattern, recursive=True)
     confound_files = sorted(confound_files)
 
@@ -814,13 +816,15 @@ def run_group_level(args):
 
     combined = pd.concat(data_frames, ignore_index=True)
     metrics = [c for c in combined.columns if c not in ["source"]]
-    stats = pd.DataFrame({
-        "mean": combined[metrics].mean(),
-        "std": combined[metrics].std(),
-        "range": combined[metrics].max() - combined[metrics].min(),
-        "min": combined[metrics].min(),
-        "max": combined[metrics].max()
-    })
+    stats = pd.DataFrame(
+        {
+            "mean": combined[metrics].mean(),
+            "std": combined[metrics].std(),
+            "range": combined[metrics].max() - combined[metrics].min(),
+            "min": combined[metrics].min(),
+            "max": combined[metrics].max(),
+        }
+    )
 
     plot_path = os.path.join(derivatives_dir, "group_median_tot_plot.png")
     sns.histplot(combined["median_tot"], bins=30)
@@ -835,7 +839,9 @@ def run_group_level(args):
         f.write("<h2>Summary statistics</h2>")
         f.write(stats.to_html())
         f.write("<h2>Median movement distribution</h2>")
-        f.write(f"<img src='{os.path.basename(plot_path)}' alt='group median_tot plot'>")
+        f.write(
+            f"<img src='{os.path.basename(plot_path)}' alt='group median_tot plot'>"
+        )
         if high_motion:
             f.write("<h2>Runs with median_tot > 5 mm</h2><ul>")
             for item in high_motion:

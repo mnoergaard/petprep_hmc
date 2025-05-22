@@ -42,9 +42,7 @@ def test_cli_group_high_motion():
         confounds_tsv = derivatives / "sub-01_desc-confounds_timeseries.tsv"
         confounds_tsv.write_text("median_tot\n6\n7\n")
 
-        cmd = (
-            f"python3 run.py {bids_dir} {Path(tmp_output_dir) / 'derivatives'} group"
-        )
+        cmd = f"python3 run.py {bids_dir} {Path(tmp_output_dir) / 'derivatives'} group"
         exit_code = subprocess.call(cmd, shell=True)
         assert exit_code == 0
 
