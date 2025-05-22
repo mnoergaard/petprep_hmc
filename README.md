@@ -50,7 +50,7 @@ To run the PETPrep Head Motion Correction BIDS App, use the following command:
 
 - `bids_dir`: Path to the input BIDS dataset
 - `output_dir`: Path to the output directory for preprocessed data
-- `analysis_level`: Level of the analysis that will be performed. Multiple participant level analyses can be run independently (in parallel) using the same output_dir.
+- `analysis_level`: Level of the analysis that will be performed. Set to `participant` (default) to process each subject independently. After all participants have been run, set `analysis_level=group` to collate the motion estimates and generate a summary report (`group_report.html` and accompanying plot) in the root of `output_dir`.
 - `--participant_label`: (Optional) A single participant label or a space-separated list of participant labels to process (e.g. sub-01 sub02). If not provided, all participants in the dataset will be processed.
 - `--participant_label_exclude`: (Optional) A single participant label or a space-separated list of participant labels to exclude in the processing (e.g. sub-01 sub02). If not provided, all participants in the dataset will be processed.
 - `--session_label`: (Optional) A single session label or a space-separated list of session labels to process (e.g. ses-01 ses-02). If not provided, all sessions in the dataset will 
@@ -70,6 +70,8 @@ For example, to process participant `sub-01`, use the following command:
 ## Outputs
 
 Preprocessed PET data along with the estimated motion parameters (confounds) and motion plots will be stored in the directory specified by the second command line argument. If no output directory is specified the outputs will saved to `<bids_dir>/derivatives/petprep_hmc` with `<bids_dir>` corresponding to the first command line argument.
+
+When running with `analysis_level=group`, a combined summary plot and HTML report (`group_report.html`) are generated in the root of the chosen output directory alongside `dataset_description.json`.
 
 ## Installation and Running the Code using Docker
 

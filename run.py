@@ -14,6 +14,7 @@ import re
 import shutil
 import json
 from typing import Union
+import csv
 from niworkflows.utils.misc import check_valid_fs_license
 from niworkflows.utils.bids import collect_data
 from niworkflows.utils.bids import collect_participants
@@ -779,6 +780,79 @@ def check_fsl_installed():
         return False
 
 
+def run_group_level(args):
+    """Aggregate confounds files and generate a group report."""
+    import pandas as pd
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+
+    if args.output_dir is None:
+        derivatives_dir = os.path.join(args.bids_dir, "derivatives", "petprep_hmc")
+    else:
+        derivatives_dir = args.output_dir
+
+    pattern = os.path.join(
+        derivatives_dir, "sub-*", "**", "*_desc-confounds_timeseries.tsv"
+    )
+    confound_files = glob.glob(pattern, recursive=True)
+    confound_files = sorted(confound_files)
+
+    data_frames = []
+    high_motion = []
+    for f in confound_files:
+        df = pd.read_csv(f, sep="\t", index_col=0)
+        df["source"] = f
+        data_frames.append(df)
+        if df["median_tot"].max() > 5:
+            sub = re.search(r"sub-[^/]+", f)
+            ses = re.search(r"ses-[^/]+", f)
+            run = re.search(r"run-[^_]+", f)
+            ids = [m.group(0) for m in [sub, ses, run] if m]
+            high_motion.append("_".join(ids))
+
+    if not data_frames:
+        print("No confounds files found for group level report.")
+        return None
+
+    combined = pd.concat(data_frames, ignore_index=True)
+    metrics = [c for c in combined.columns if c not in ["source"]]
+    stats = pd.DataFrame(
+        {
+            "mean": combined[metrics].mean(),
+            "std": combined[metrics].std(),
+            "range": combined[metrics].max() - combined[metrics].min(),
+            "min": combined[metrics].min(),
+            "max": combined[metrics].max(),
+        }
+    )
+
+    plot_path = os.path.join(derivatives_dir, "group_median_tot_plot.png")
+    sns.histplot(combined["median_tot"], bins=30)
+    plt.xlabel("median_tot [mm]")
+    plt.tight_layout()
+    plt.savefig(plot_path)
+    plt.close()
+
+    report_path = os.path.join(derivatives_dir, "group_report.html")
+    with open(report_path, "w") as f:
+        f.write("<html><body><h1>Group Motion Correction Report</h1>")
+        f.write("<h2>Summary statistics</h2>")
+        f.write(stats.to_html())
+        f.write("<h2>Median movement distribution</h2>")
+        f.write(
+            f"<img src='{os.path.basename(plot_path)}' alt='group median_tot plot'>"
+        )
+        if high_motion:
+            f.write("<h2>Runs with median_tot > 5 mm</h2><ul>")
+            for item in high_motion:
+                f.write(f"<li>{item}</li>")
+            f.write("</ul>")
+        f.write("</body></html>")
+
+    print(report_path)
+    return report_path
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="BIDS App for PETPrep head motion correction workflow"
@@ -878,4 +952,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    main(args)
+    if args.analysis_level == "group":
+        run_group_level(args)
+    else:
+        main(args)
