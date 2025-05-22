@@ -2,6 +2,7 @@ import os
 import subprocess
 import tempfile
 from pathlib import Path
+import json
 
 
 def test_cli():
@@ -15,3 +16,11 @@ def test_cli():
         cmd = f"python3 run.py --bids_dir {bids_dir} --output_dir {output_dir}"
         exit_code = subprocess.call(cmd, shell=True)
         assert exit_code == 0
+
+        json_files = list(output_dir.rglob('*desc-mc_pet.json'))
+        assert json_files, 'No output JSON files found'
+        with open(json_files[0]) as jf:
+            data = json.load(jf)
+            assert 'FrameDuration' in data
+            assert 'QC' in data
+            assert os.path.exists(data['QC'])
