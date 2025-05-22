@@ -260,7 +260,7 @@ def main(args):
             "MCTreshold": f"{args.mc_thresh}",
             "MCFWHM": f"{args.mc_fwhm}",
             "MCStartTime": f"{args.mc_start_time}",
-            "QC": report_file_path,
+            "QC": str(report_file_path),
             "SoftwareName": "PETPrep HMC workflow",
             "SoftwareVersion": str(__version__),
             "CommandLine": " ".join(sys.argv),
