@@ -238,6 +238,28 @@ def main(args):
                 return_type="filename",
             )[0]
 
+        # Load timing related fields from the original PET JSON file
+        json_file = re.sub(r"\.nii(\.gz)?$", ".json", source_file)
+        timing_fields = {}
+        if os.path.exists(json_file):
+            with open(json_file, "r") as jf:
+                orig_json = json.load(jf)
+                for key in [
+                    "TimeZero",
+                    "ScanStart",
+                    "FrameDuration",
+                    "FrameTimesStart",
+                    "Units",
+                ]:
+                    if key in orig_json:
+                        timing_fields[key] = orig_json[key]
+
+        # Plot with and without motion correction
+        plot_mc_dynamic_pet(source_file, mc_files[idx], sub_out_dir, file_prefix)
+
+        # create html report
+        report_file_path = display_motion_correction_html(file_prefix, sub_out_dir)
+        
         hmc_json = {
             "Description": "Motion-corrected PET file",
             "Sources": source_file,
@@ -246,7 +268,8 @@ def main(args):
             "MCTreshold": f"{args.mc_thresh}",
             "MCFWHM": f"{args.mc_fwhm}",
             "MCStartTime": f"{args.mc_start_time}",
-            "QC": "",
+            "QC": report_file_path,
+            **timing_fields,
             "SoftwareName": "PETPrep HMC workflow",
             "SoftwareVersion": str(__version__),
             "CommandLine": " ".join(sys.argv),
@@ -256,13 +279,7 @@ def main(args):
         with open(
             os.path.join(sub_out_dir, f"{file_prefix}_desc-mc_pet.json"), "w"
         ) as outfile:
-            outfile.write(json_object)
-
-        # Plot with and without motion correction
-        plot_mc_dynamic_pet(source_file, mc_files[idx], sub_out_dir, file_prefix)
-
-        # create html report
-        display_motion_correction_html(file_prefix, sub_out_dir)
+            outfile.write(json_object)   
 
     # Remove temp outputs
     shutil.rmtree(os.path.join(args.bids_dir, "petprep_hmc_wf"))
