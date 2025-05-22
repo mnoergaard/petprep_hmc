@@ -251,7 +251,7 @@ def main(args):
 
         # create html report
         report_file_path = display_motion_correction_html(file_prefix, sub_out_dir)
-        
+
         hmc_json = {
             "Description": "Motion-corrected PET file",
             "Sources": source_file,
@@ -264,14 +264,14 @@ def main(args):
             "SoftwareName": "PETPrep HMC workflow",
             "SoftwareVersion": str(__version__),
             "CommandLine": " ".join(sys.argv),
-            **source_metadata
+            **source_metadata,
         }
 
         json_object = json.dumps(hmc_json, indent=4)
         with open(
             os.path.join(sub_out_dir, f"{file_prefix}_desc-mc_pet.json"), "w"
         ) as outfile:
-            outfile.write(json_object)   
+            outfile.write(json_object)
 
     # Remove temp outputs
     shutil.rmtree(os.path.join(args.bids_dir, "petprep_hmc_wf"))
