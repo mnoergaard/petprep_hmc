@@ -238,21 +238,13 @@ def main(args):
                 return_type="filename",
             )[0]
 
-        # Load timing related fields from the original PET JSON file
+        # Load metadata from the original PET JSON file so it can be merged into
+        # the motion corrected metadata.
         json_file = re.sub(r"\.nii(\.gz)?$", ".json", source_file)
-        timing_fields = {}
+        source_metadata = {}
         if os.path.exists(json_file):
             with open(json_file, "r") as jf:
-                orig_json = json.load(jf)
-                for key in [
-                    "TimeZero",
-                    "ScanStart",
-                    "FrameDuration",
-                    "FrameTimesStart",
-                    "Units",
-                ]:
-                    if key in orig_json:
-                        timing_fields[key] = orig_json[key]
+                source_metadata = json.load(jf)
 
         # Plot with and without motion correction
         plot_mc_dynamic_pet(source_file, mc_files[idx], sub_out_dir, file_prefix)
@@ -269,10 +261,10 @@ def main(args):
             "MCFWHM": f"{args.mc_fwhm}",
             "MCStartTime": f"{args.mc_start_time}",
             "QC": report_file_path,
-            **timing_fields,
             "SoftwareName": "PETPrep HMC workflow",
             "SoftwareVersion": str(__version__),
             "CommandLine": " ".join(sys.argv),
+            **source_metadata
         }
 
         json_object = json.dumps(hmc_json, indent=4)
@@ -556,6 +548,7 @@ def display_motion_correction_html(file_prefix, sub_out_dir):
     report_file_path = op.join(sub_out_dir, f"{file_prefix}_report.html")
     with open(report_file_path, "w") as report_file:
         report_file.write(html_content)
+    return report_file_path
 
 
 def load_config(filepath):
