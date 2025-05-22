@@ -14,6 +14,7 @@ import re
 import shutil
 import json
 from typing import Union
+import csv
 from niworkflows.utils.misc import check_valid_fs_license
 from niworkflows.utils.bids import collect_data
 from niworkflows.utils.bids import collect_participants
@@ -284,6 +285,55 @@ def main(args):
         os.path.join(args.output_dir, "dataset_description.json"), "w"
     ) as outfile:
         outfile.write(json_object)
+
+
+def run_group_level(args):
+    """Aggregate motion metrics across subjects and sessions."""
+    if args.output_dir is None:
+        output_dir = os.path.join(args.bids_dir, "derivatives", "petprep_hmc")
+    else:
+        output_dir = args.output_dir
+
+    pattern = os.path.join(output_dir, "**", "*_desc-confounds_timeseries.tsv")
+    confound_files = glob.glob(pattern, recursive=True)
+
+    metrics = []
+    totals = {}
+    count = 0
+
+    for fpath in confound_files:
+        with open(fpath, "r") as f:
+            reader = csv.reader(f, delimiter="\t")
+            header = next(reader)
+            if header and header[0] == "":
+                header = header[1:]
+            if not metrics:
+                metrics = header
+                totals = {m: 0.0 for m in metrics}
+            for row in reader:
+                if not row:
+                    continue
+                values = row[1:] if len(row) == len(metrics) + 1 else row
+                for m, v in zip(metrics, values):
+                    try:
+                        totals[m] += float(v)
+                    except ValueError:
+                        pass
+                count += 1
+
+    if not count:
+        return
+
+    stats = {m: totals[m] / count for m in metrics if count}
+
+    report_path = os.path.join(output_dir, "group_report.html")
+    with open(report_path, "w") as f:
+        f.write("<html><body><h1>Group Motion Report</h1><table border='1'>")
+        f.write("<tr><th>Metric</th><th>Mean</th></tr>")
+        for m in metrics:
+            if m in stats:
+                f.write(f"<tr><td>{m}</td><td>{stats[m]:.4f}</td></tr>")
+        f.write("</table></body></html>")
 
 
 def init_petprep_hmc_wf(subjects, sessions_to_exclude=[]):
@@ -878,4 +928,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    main(args)
+    if args.analysis_level == "group":
+        run_group_level(args)
+    else:
+        main(args)
