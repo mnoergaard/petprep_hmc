@@ -238,6 +238,20 @@ def main(args):
                 return_type="filename",
             )[0]
 
+        # Load metadata from the original PET JSON file so it can be merged into
+        # the motion corrected metadata.
+        json_file = re.sub(r"\.nii(\.gz)?$", ".json", source_file)
+        source_metadata = {}
+        if os.path.exists(json_file):
+            with open(json_file, "r") as jf:
+                source_metadata = json.load(jf)
+
+        # Plot with and without motion correction
+        plot_mc_dynamic_pet(source_file, mc_files[idx], sub_out_dir, file_prefix)
+
+        # create html report
+        report_file_path = display_motion_correction_html(file_prefix, sub_out_dir)
+
         hmc_json = {
             "Description": "Motion-corrected PET file",
             "Sources": source_file,
@@ -246,10 +260,11 @@ def main(args):
             "MCTreshold": f"{args.mc_thresh}",
             "MCFWHM": f"{args.mc_fwhm}",
             "MCStartTime": f"{args.mc_start_time}",
-            "QC": "",
+            "QC": str(report_file_path),
             "SoftwareName": "PETPrep HMC workflow",
             "SoftwareVersion": str(__version__),
             "CommandLine": " ".join(sys.argv),
+            **source_metadata,
         }
 
         json_object = json.dumps(hmc_json, indent=4)
@@ -257,12 +272,6 @@ def main(args):
             os.path.join(sub_out_dir, f"{file_prefix}_desc-mc_pet.json"), "w"
         ) as outfile:
             outfile.write(json_object)
-
-        # Plot with and without motion correction
-        plot_mc_dynamic_pet(source_file, mc_files[idx], sub_out_dir, file_prefix)
-
-        # create html report
-        display_motion_correction_html(file_prefix, sub_out_dir)
 
     # Remove temp outputs
     shutil.rmtree(os.path.join(args.bids_dir, "petprep_hmc_wf"))
@@ -539,6 +548,7 @@ def display_motion_correction_html(file_prefix, sub_out_dir):
     report_file_path = op.join(sub_out_dir, f"{file_prefix}_report.html")
     with open(report_file_path, "w") as report_file:
         report_file.write(html_content)
+    return report_file_path
 
 
 def load_config(filepath):
