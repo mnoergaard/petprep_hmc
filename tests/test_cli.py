@@ -27,7 +27,7 @@ def test_cli():
             # ensure QC report path stored and file exists
             assert "QC" in data
             assert os.path.exists(data["QC"])
-        
+
         txt_files = list(output_dir.rglob("*_xfm.txt"))
         assert txt_files, "No transform text files found"
 
