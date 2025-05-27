@@ -317,7 +317,6 @@ def main(args):
 
 
 def init_petprep_hmc_wf(subjects, sessions_to_exclude=[]):
-
     petprep_hmc_wf = Workflow(name="petprep_hmc_wf", base_dir=args.bids_dir)
     petprep_hmc_wf.config["execution"]["remove_unnecessary_outputs"] = "false"
 
@@ -728,7 +727,6 @@ def combine_hmc_outputs(translations, rot_angles, rotation_translation_matrix, i
 
     movement = []
     for idx, trans in enumerate(translations):
-
         img = nib.load(in_file[idx])
         vox_ind = np.asarray(np.nonzero(img.get_fdata()))
         pos_bef = np.concatenate((vox_ind, np.ones((1, len(vox_ind[0, :])))))
