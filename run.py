@@ -156,6 +156,16 @@ def main(args):
             Path(args.bids_dir), "petprep_hmc_wf", "*", "*", "*", "translation.png"
         )
     )
+    itk_files = glob.glob(
+        os.path.join(
+            Path(args.bids_dir), "petprep_hmc_wf", "*", "*", "*", "itk_transforms.txt"
+        )
+    )
+    petref_files = glob.glob(
+        os.path.join(
+            Path(args.bids_dir), "petprep_hmc_wf", "*", "*", "*", "hmc_petref.nii.gz"
+        )
+    )
 
     for idx, x in enumerate(mc_files):
         match_sub_id = re.search(r"sub-([A-Za-z0-9]+)_", mc_files[idx])
@@ -203,6 +213,17 @@ def main(args):
         shutil.copyfile(
             translation[idx],
             os.path.join(sub_out_dir, f"{file_prefix}_desc-translation.png"),
+        )
+        shutil.copyfile(
+            itk_files[idx],
+            os.path.join(
+                sub_out_dir,
+                f"{file_prefix}_from-orig_to-petref_mode-image_xfm.txt",
+            ),
+        )
+        shutil.copyfile(
+            petref_files[idx],
+            os.path.join(sub_out_dir, f"{file_prefix}_desc-hmc_petref.nii.gz"),
         )
 
         if ses_id is not None and run_id is None:
@@ -296,7 +317,6 @@ def main(args):
 
 
 def init_petprep_hmc_wf(subjects, sessions_to_exclude=[]):
-
     petprep_hmc_wf = Workflow(name="petprep_hmc_wf", base_dir=args.bids_dir)
     petprep_hmc_wf.config["execution"]["remove_unnecessary_outputs"] = "false"
 
@@ -387,6 +407,12 @@ def init_single_subject_wf(subject_id, sessions_to_exclude=[]):
         iterfield=["in_files"],
     )
 
+    # Convert the template from mri_robust_register to NIfTI for export
+    convert_petref = Node(
+        fs.MRIConvert(out_type="niigz", out_file="hmc_petref.nii.gz"),
+        name="convert_petref",
+    )
+
     correct_motion = MapNode(
         interface=fs.ApplyVolTransform(),
         name="correct_motion",
@@ -460,6 +486,16 @@ def init_single_subject_wf(subject_id, sessions_to_exclude=[]):
         name="plot_motion",
     )
 
+    mat_to_itk = Node(
+        Function(
+            input_names=["mat_list", "out_file"],
+            output_names=["out_file"],
+            function=write_itk_transforms,
+        ),
+        name="mat_to_itk",
+    )
+    mat_to_itk.inputs.out_file = "itk_transforms.txt"
+
     # Connect workflow - init_pet_hmc_wf
     subject_wf.connect(
         [
@@ -478,6 +514,7 @@ def init_single_subject_wf(subject_id, sessions_to_exclude=[]):
                 estimate_motion,
                 [("upd_list_transforms", "transform_outputs")],
             ),
+            (estimate_motion, convert_petref, [("out_file", "in_file")]),
             (split_pet, correct_motion, [("out_file", "source_file")]),
             (estimate_motion, correct_motion, [("transform_outputs", "reg_file")]),
             (estimate_motion, correct_motion, [("out_file", "target_file")]),
@@ -490,6 +527,7 @@ def init_single_subject_wf(subject_id, sessions_to_exclude=[]):
             (estimate_motion, lta2xform, [("transform_outputs", "in_lta")]),
             (estimate_motion, lta2xform, [(("transform_outputs", lta2mat), "out_fsl")]),
             (lta2xform, est_trans_rot, [("out_fsl", "mat_file")]),
+            (lta2xform, mat_to_itk, [("out_fsl", "mat_list")]),
             (
                 est_trans_rot,
                 hmc_movement_output,
@@ -628,6 +666,22 @@ def lta2mat(in_file):
     return mat_list
 
 
+def write_itk_transforms(mat_list, out_file):
+    """Write ITK transform file from a list of FSL matrices."""
+    import numpy as np
+
+    with open(out_file, "w") as f:
+        f.write("#Insight Transform File V1.0\n")
+        for idx, mat in enumerate(mat_list):
+            matrix = np.loadtxt(mat)
+            params = list(matrix[:3, :3].ravel()) + list(matrix[:3, 3])
+            f.write(f"#Transform {idx}\n")
+            f.write("Transform: AffineTransform_float_3_3\n")
+            f.write("Parameters: " + " ".join(str(v) for v in params) + "\n")
+            f.write("FixedParameters: 0 0 0\n\n")
+    return out_file
+
+
 def get_min_frame(json_file, mc_start_time):
     """
     Function to extract the frame number after mc_start_time (default=120) seconds of mid frames of dynamic PET data to be used with motion correction
@@ -673,7 +727,6 @@ def combine_hmc_outputs(translations, rot_angles, rotation_translation_matrix, i
 
     movement = []
     for idx, trans in enumerate(translations):
-
         img = nib.load(in_file[idx])
         vox_ind = np.asarray(np.nonzero(img.get_fdata()))
         pos_bef = np.concatenate((vox_ind, np.ones((1, len(vox_ind[0, :])))))
