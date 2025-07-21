@@ -70,6 +70,7 @@ For example, to process participant `sub-01`, use the following command:
 ## Outputs
 
 Preprocessed PET data along with the estimated motion parameters (confounds) and motion plots will be stored in the directory specified by the second command line argument. If no output directory is specified the outputs will saved to `<bids_dir>/derivatives/petprep_hmc` with `<bids_dir>` corresponding to the first command line argument.
+Additionally, a text file containing all framewise transforms in ITK format will be saved for each run with the suffix `_from-orig_to-petref_mode-image_xfm.txt`. Each processed run also includes an unbiased PET reference image derived during motion estimation. This reference is saved as `*_desc-hmc_petref.nii.gz` in the derivatives directory.
 
 When running with `analysis_level=group`, a combined summary plot and HTML report (`group_report.html`) are generated in the root of the chosen output directory alongside `dataset_description.json`.
 
